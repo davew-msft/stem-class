@@ -60,3 +60,8 @@ Would you like to try it out? You can upload a picture of the object, and I’ll
 
 ## Vibe Coding
 
+## Spec-Driven Development with GH Spec Kit
+
+* https://github.com/github/spec-kit
+* might be better to do _the documentation up front_ vs vibe coding which is _constant prompt refinement_.  Less _cowboy_ and more _astronaut_.  
+
