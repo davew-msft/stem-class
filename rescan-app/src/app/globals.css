@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles for RIC Scanner app */
+@layer base {
+  html {
+    font-family: system-ui, sans-serif;
+  }
+  
+  body {
+    @apply antialiased;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  .card {
+    @apply bg-white rounded-xl shadow-lg p-6 border border-gray-100;
+  }
+  
+  .camera-container {
+    @apply relative overflow-hidden rounded-lg bg-gray-900;
+  }
+  
+  .scan-result {
+    @apply p-4 rounded-lg border-l-4 mb-4;
+  }
+  
+  .scan-result.recyclable {
+    @apply bg-green-50 border-green-400;
+  }
+  
+  .scan-result.not-recyclable {
+    @apply bg-red-50 border-red-400;
+  }
+  
+  .scan-result.conditional {
+    @apply bg-yellow-50 border-yellow-400;
+  }
+}
+
+/* Mobile responsive camera styles */
+@media (max-width: 640px) {
+  .camera-container {
+    aspect-ratio: 4/3;
+  }
+}
+
+/* Loading animations */
+.loading-spinner {
+  @apply animate-spin rounded-full h-6 w-6 border-2 border-gray-300 border-t-green-600;
+}
+
+/* Accessibility improvements */
+.focus-visible {
+  @apply ring-2 ring-green-500 ring-opacity-75;
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}

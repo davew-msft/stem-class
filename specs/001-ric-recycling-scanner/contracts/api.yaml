@@ -1,0 +1,416 @@
+openapi: 3.0.3
+info:
+  title: RIC Recycling Scanner API
+  description: API for scanning RIC codes and determining local recyclability
+  version: 1.0.0
+  contact:
+    name: RIC Scanner Development Team
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local development server
+  - url: https://api.recycling-scanner.example.com
+    description: Production server
+
+paths:
+  /ric-codes:
+    get:
+      summary: Get all RIC codes and their general information
+      description: Returns reference data for all RIC codes (1-7) with plastic types and descriptions
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RicCode'
+
+  /ric-codes/{code}/check:
+    post:
+      summary: Check recyclability of a specific RIC code
+      description: Determine if a RIC code is recyclable at user's location and award points
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 7
+          description: RIC code number (1-7)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                  format: uuid
+                  description: User ID or session ID
+                scan_method:
+                  type: string
+                  enum: [camera, manual_entry]
+                  description: How the RIC code was identified
+                location:
+                  $ref: '#/components/schemas/LocationRequest'
+              required:
+                - user_id
+                - scan_method
+      responses:
+        '200':
+          description: Successful scan result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScanResult'
+        '400':
+          description: Invalid RIC code or request data
+        '422':
+          description: Location not serviceable
+
+  /users:
+    post:
+      summary: Create or update user profile
+      description: Register user and set location preferences for recyclability checking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                session_id:
+                  type: string
+                  description: Anonymous session identifier
+                street_address:
+                  type: string
+                  description: User's street address for location-based results
+              required:
+                - session_id
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '200':
+          description: Existing user updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid address or request data
+
+  /users/{user_id}:
+    get:
+      summary: Get user profile and points
+      description: Retrieve user information including total points and recent activity
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User profile retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+
+    patch:
+      summary: Update user location
+      description: Update user's street address for improved recyclability results
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                street_address:
+                  type: string
+                  description: New street address
+              required:
+                - street_address
+      responses:
+        '200':
+          description: User location updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid address
+        '404':
+          description: User not found
+
+  /users/{user_id}/scans:
+    get:
+      summary: Get user's scan history
+      description: Retrieve recent scans performed by the user for progress tracking
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Number of scans to return
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Number of scans to skip
+      responses:
+        '200':
+          description: Scan history retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  scans:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Scan'
+                  total_count:
+                    type: integer
+                  has_more:
+                    type: boolean
+
+  /recycling-capabilities:
+    get:
+      summary: Get recycling capabilities for a location
+      description: Find recycling facilities and capabilities for a specific location
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          schema:
+            type: number
+            format: float
+          description: Latitude
+        - name: lng
+          in: query
+          required: true
+          schema:
+            type: number
+            format: float
+          description: Longitude
+      responses:
+        '200':
+          description: Recycling capabilities found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RecyclingCapability'
+
+components:
+  schemas:
+    RicCode:
+      type: object
+      properties:
+        code:
+          type: integer
+          minimum: 1
+          maximum: 7
+        plastic_type:
+          type: string
+          example: "PET"
+        description:
+          type: string
+          example: "Polyethylene Terephthalate"
+        general_recyclability:
+          type: string
+          enum: [recyclable, not_recyclable, conditional]
+        common_products:
+          type: array
+          items:
+            type: string
+          example: ["water bottles", "soda containers"]
+        recycling_notes:
+          type: string
+          example: "Most curbside programs accept this plastic type"
+
+    LocationRequest:
+      type: object
+      properties:
+        lat:
+          type: number
+          format: float
+          description: Latitude coordinate
+        lng:
+          type: number
+          format: float
+          description: Longitude coordinate
+        street_address:
+          type: string
+          description: Street address (alternative to lat/lng)
+
+    ScanResult:
+      type: object
+      properties:
+        scan_id:
+          type: string
+          format: uuid
+        ric_code:
+          type: integer
+          minimum: 1
+          maximum: 7
+        is_recyclable_locally:
+          type: boolean
+          description: Whether the item is recyclable at user's location
+        points_awarded:
+          type: integer
+          description: Points earned for this scan
+        recyclability_reason:
+          type: string
+          description: Explanation of why item is/isn't recyclable locally
+        nearest_facilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecyclingCapability'
+        total_user_points:
+          type: integer
+          description: User's updated point total
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        session_id:
+          type: string
+        street_address:
+          type: string
+          nullable: true
+        total_points:
+          type: integer
+        scan_count:
+          type: integer
+          description: Total number of scans performed
+        created_at:
+          type: string
+          format: date-time
+        last_scan_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    Scan:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        ric_code:
+          type: integer
+          minimum: 1
+          maximum: 7
+        is_recyclable_locally:
+          type: boolean
+        points_awarded:
+          type: integer
+        scan_method:
+          type: string
+          enum: [camera, manual_entry]
+        created_at:
+          type: string
+          format: date-time
+        plastic_type:
+          type: string
+          description: Denormalized from RIC code for convenience
+
+    RecyclingCapability:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        facility_name:
+          type: string
+        accepted_ric_codes:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+            maximum: 7
+        facility_type:
+          type: string
+          enum: [curbside, drop_off, special_collection]
+        address:
+          type: string
+        contact_info:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        distance_km:
+          type: number
+          format: float
+          description: Distance from user location (when applicable)
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: object
+          description: Additional error context
+          nullable: true
+
+  responses:
+    BadRequest:
+      description: Invalid request data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UnprocessableEntity:
+      description: Valid request but unable to process
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
