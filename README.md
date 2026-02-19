@@ -69,12 +69,29 @@ Get it working on a given machine:
 
 ```bash
 cd stem-class
+sudo snap install astral-uv --classic
 uv tool install specify-cli --from git+https://github.com/github/spec-kit.git
-specify init rescan-app
-cd brian-test
+specify init rescan
+cd rescan
 # open a new window with the correct context
 code .
 ```
+
+/speckit.constitution - Establish project principles
+
+                                                                                      │
+│     2.2 /speckit.specify - Create baseline specification                                                                                          │
+│     2.3 /speckit.plan - Create implementation plan                                                                                                │
+│     2.4 /speckit.tasks - Generate actionable tasks                                                                                                │
+│     2.5 /speckit.implement - Execute implementation        
+
+
+│  Optional commands that you can use for your specs (improve quality & confidence)                                                                 │
+│                                                                                                                                                   │
+│  ○ /speckit.clarify (optional) - Ask structured questions to de-risk ambiguous areas before planning (run before /speckit.plan if used)           │
+│  ○ /speckit.analyze (optional) - Cross-artifact consistency & alignment report (after /speckit.tasks, before /speckit.implement)                  │
+│  ○ /speckit.checklist (optional) - Generate quality checklists to validate requirements completeness, clarity, and consistency (after             │
+│  /speckit.plan)  
 
 in the ghcp prompt:
 Fill the constitution wih the bare minimum requirements for a static web app based on the template.  
