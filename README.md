@@ -65,3 +65,48 @@ Would you like to try it out? You can upload a picture of the object, and I’ll
 * https://github.com/github/spec-kit
 * might be better to do _the documentation up front_ vs vibe coding which is _constant prompt refinement_.  Less _cowboy_ and more _astronaut_.  
 
+Get it working on a given machine:
+
+```bash
+cd stem-class
+uv tool install specify-cli --from git+https://github.com/github/spec-kit.git
+specify init rescan-app
+cd brian-test
+# open a new window with the correct context
+code .
+```
+
+in the ghcp prompt:
+Fill the constitution wih the bare minimum requirements for a static web app based on the template.  
+
+* remove anything that is clearly not needed.  
+
+the "what" and the "why"
+
+in ghcp "/specify"
+
+/speckit.specify 
+I'm building a website application that will scan a RIC (recycling symbol code) and tell the user if the given product is recyclable in their area.  For every item they enter into the website, points will be given.  The user will be able to enter their street address so that we can track the points.  The website will be able to determine if the product is recyclable given the local recycling capabilities. 
+
+* sleek, something that would stand out.  
+* there should be a page for ..., an about page, an FAQ page
+
+then:
+* for things that need clarification use the best guess you think is reasonable.  update acceptable checklist after.  
+
+then:  
+/plan 
+
+
+I am going to use Next.js and SPA, the database is pgres.  Site is responsive and ready for mobile.  
+
+use /plan for additional requirements
+
+then:  
+
+follow instructions in tasks.prompt.md and break this down into tasks
+
+then:
+
+implement the tasks for this project and update the task list as you go.  
+
