@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Upload recycling images for AI analysis and earn points while learning about environmental impact">
+    <meta name="keywords" content="recycling, AI scan, image upload, material identification, STEM education">
+    <title>Rescan - AI Image Analysis | Scan & Learn</title>
+    
+    <!-- Educational Note: External CSS for responsive design -->
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    
+    <!-- Educational Note: Icons for better user experience -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Educational Note: Custom scan page styles -->
+    <style>
+        /* Educational Section: Scan-specific styling */
+        
+        .scan-container {
+            background: linear-gradient(135deg, #f0f4f8 0%, #e6f3ff 100%);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 0 auto;
+            max-width: 800px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .upload-area {
+            border: 3px dashed #4caf50;
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            text-align: center;
+            background: linear-gradient(135deg, #f8fff8 0%, #e8f5e8 100%);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .upload-area:hover {
+            border-color: #2d7a2d;
+            background: linear-gradient(135deg, #e8f5e8 0%, #d4f4d4 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(45, 122, 45, 0.15);
+        }
+        
+        .upload-area.dragging {
+            border-color: #2196F3;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            transform: scale(1.02);
+        }
+        
+        .upload-icon {
+            font-size: 4rem;
+            color: #4caf50;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-area:hover .upload-icon {
+            color: #2d7a2d;
+            transform: scale(1.1);
+        }
+        
+        .upload-area.dragging .upload-icon {
+            color: #2196F3;
+            transform: scale(1.2) rotate(10deg);
+        }
+        
+        .upload-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2d7a2d;
+            margin-bottom: 0.5rem;
+        }
+        
+        .upload-hint {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .supported-formats {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+        
+        .format-badge {
+            background: #4caf50;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .image-preview-container {
+            margin-top: 2rem;
+            display: none;
+        }
+        
+        .image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+            display: block;
+        }
+        
+        .preview-actions {
+            margin-top: 1rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn-analyze {
+            background: linear-gradient(135deg, #4caf50 0%, #2d7a2d 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-analyze:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(76, 175, 80, 0.3);
+        }
+        
+        .btn-analyze:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-remove {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-remove:hover {
+            background: #d32f2f;
+            transform: translateY(-1px);
+        }
+        
+        .analysis-section {
+            margin-top: 2rem;
+            display: none;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50 0%, #2d7a2d 100%);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 4px;
+        }
+        
+        .analysis-result {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            margin-top: 1.5rem;
+        }
+        
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .result-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #4caf50 0%, #2d7a2d 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+        
+        .result-summary {
+            flex: 1;
+        }
+        
+        .material-type {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2d7a2d;
+            margin-bottom: 0.25rem;
+        }
+        
+        .confidence-score {
+            font-size: 1rem;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .confidence-bar {
+            width: 100px;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff5722 0%, #ff9800 50%, #4caf50 100%);
+            border-radius: 3px;
+            transition: width 0.8s ease;
+        }
+        
+        .points-earned {
+            background: linear-gradient(135deg, #ffd54f 0%, #ffb300 100%);
+            color: #333;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            margin: 1.5rem 0;
+        }
+        
+        .educational-content {
+            margin-top: 2rem;
+        }
+        
+        .educational-card {
+            background: #f8f9fa;
+            border-left: 4px solid #4caf50;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .educational-title {
+            font-weight: 600;
+            color: #2d7a2d;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .feedback-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .feedback-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        
+        .btn-feedback {
+            padding: 0.5rem 1.5rem;
+            border: 2px solid #4caf50;
+            background: white;
+            color: #4caf50;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .btn-feedback.correct:hover {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .btn-feedback.incorrect {
+            border-color: #ff5722;
+            color: #ff5722;
+        }
+        
+        .btn-feedback.incorrect:hover {
+            background: #ff5722;
+            color: white;
+        }
+        
+        .scan-again-section {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .btn-scan-again {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-scan-again:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(33, 150, 243, 0.3);
+        }
+        
+        /* Educational Section: Camera Interface Styles */
+        
+        .scan-method-selection {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .btn-scan-method {
+            background: white;
+            color: #4caf50;
+            border: 2px solid #4caf50;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 140px;
+            justify-content: center;
+        }
+        
+        .btn-scan-method:hover {
+            background: #4caf50;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
+        }
+        
+        .btn-scan-method.active {
+            background: #4caf50;
+            color: white;
+            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
+        }
+        
+        .camera-interface {
+            margin-bottom: 2rem;
+            display: none;
+        }
+        
+        .upload-interface {
+            margin-bottom: 2rem;
+        }
+        
+        .camera-interface.active {
+            display: block;
+        }
+        
+        .upload-interface.active {
+            display: block;
+        }
+        
+        .camera-container {
+            position: relative;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .camera-preview {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .camera-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .camera-viewfinder {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            border-radius: 12px;
+        }
+        
+        .viewfinder-corner {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #4caf50;
+        }
+        
+        .viewfinder-corner.top-left {
+            top: 0;
+            left: 0;
+            border-right: none;
+            border-bottom: none;
+            border-radius: 8px 0 0 0;
+        }
+        
+        .viewfinder-corner.top-right {
+            top: 0;
+            right: 0;
+            border-left: none;
+            border-bottom: none;
+            border-radius: 0 8px 0 0;
+        }
+        
+        .viewfinder-corner.bottom-left {
+            bottom: 0;
+            left: 0;
+            border-right: none;
+            border-top: none;
+            border-radius: 0 0 0 8px;
+        }
+        
+        .viewfinder-corner.bottom-right {
+            bottom: 0;
+            right: 0;
+            border-left: none;
+            border-top: none;
+            border-radius: 0 0 8px 0;
+        }
+        
+        .viewfinder-text {
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        
+        .camera-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn-camera-action {
+            background: linear-gradient(135deg, #4caf50 0%, #2d7a2d 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+        }
+        
+        .btn-camera-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(76, 175, 80, 0.4);
+        }
+        
+        .btn-camera-action.secondary {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+        }
+        
+        .btn-camera-action.secondary:hover {
+            box-shadow: 0 8px 24px rgba(33, 150, 243, 0.4);
+        }
+        
+        .camera-error {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border: 1px solid #ffc107;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            margin-top: 1rem;
+        }
+        
+        .camera-error .error-content {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .camera-error i {
+            font-size: 3rem;
+            color: #ff9800;
+            margin-bottom: 1rem;
+        }
+        
+        .camera-error h4 {
+            color: #e65100;
+            margin-bottom: 0.5rem;
+        }
+        
+        .camera-error p {
+            color: #bf360c;
+            margin-bottom: 1.5rem;
+        }
+        
+        .btn-fallback {
+            background: #ff9800;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-fallback:hover {
+            background: #f57c00;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(255, 152, 0, 0.3);
+        }
+        
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            display: none;
+            border-left: 4px solid #f44336;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        /* Educational Note: Responsive design for mobile */
+        @media (max-width: 768px) {
+            .scan-container {
+                padding: 1.5rem;
+            }
+            
+            .upload-area {
+                padding: 2rem 1rem;
+            }
+            
+            .upload-icon {
+                font-size: 3rem;
+            }
+            
+            .upload-text {
+                font-size: 1.1rem;
+            }
+            
+            .preview-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .result-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .feedback-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .scan-method-selection {
+                flex-direction: column;
+                align-items: center;
+                gap: 0.75rem;
+            }
+            
+            .btn-scan-method {
+                width: 100%;
+                max-width: 200px;
+            }
+            
+            .camera-preview {
+                height: 300px;
+            }
+            
+            .camera-viewfinder {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .viewfinder-text {
+                font-size: 0.8rem;
+                bottom: -35px;
+            }
+            
+            .camera-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn-camera-action {
+                width: 100%;
+                max-width: 200px;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Educational Note: Semantic HTML structure for accessibility -->
+    <header class="site-header">
+        <div class="container">
+            <!-- Educational Note: Logo and branding with back navigation -->
+            <div class="site-branding">
+                <a href="login.html" class="back-link" aria-label="Return to login page">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                </a>
+                <h1 class="site-title">
+                    <i class="fas fa-recycle" aria-hidden="true"></i>
+                    Rescan
+                </h1>
+                <p class="site-tagline">AI-Powered Material Recognition</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Educational Note: Main content area for scanning interface -->
+    <main class="main-content" role="main">
+        <div class="container">
+            
+            <!-- Educational Note: Address context display -->
+            <section class="address-context" style="text-align: center; margin-bottom: 2rem;">
+                <p class="current-address" style="font-size: 1.1rem; color: #666;">
+                    <i class="fas fa-map-marker-alt" style="color: #4caf50;"></i>
+                    Scanning for: <span id="current-address-display">Loading...</span>
+                </p>
+                <p class="current-points" style="font-size: 1rem; font-weight: 600; color: #2d7a2d;">
+                    Current Points: <span id="current-points-display">0</span>
+                </p>
+            </section>
+            
+            <!-- Educational Note: Main scanning interface -->
+            <section class="scan-section">
+                <div class="scan-container">
+                    
+                    <!-- Educational Note: Section header -->
+                    <div class="section-header" style="text-align: center; margin-bottom: 2rem;">
+                        <h2 style="color: #2d7a2d; font-size: 2rem; margin-bottom: 0.5rem;">
+                            <i class="fas fa-camera-retro" aria-hidden="true"></i>
+                            AI Material Recognition
+                        </h2>
+                        <p style="color: #666; font-size: 1.1rem;">
+                            Scan or upload an image of recycling symbols to identify materials and earn points!
+                        </p>
+                    </div>
+                    
+                    <!-- Educational Note: Scan method selection buttons -->
+                    <div class="scan-method-selection" style="text-align: center; margin-bottom: 2rem;">
+                        <button class="btn-scan-method active" id="cameraBtn" data-method="camera">
+                            <i class="fas fa-camera"></i>
+                            Use Camera
+                        </button>
+                        <button class="btn-scan-method" id="uploadBtn" data-method="upload">
+                            <i class="fas fa-upload"></i>
+                            Upload Image
+                        </button>
+                    </div>
+                    
+                    <!-- Educational Note: Camera interface -->
+                    <div class="camera-interface" id="cameraInterface">
+                        <div class="camera-container" id="cameraContainer">
+                            <video id="cameraPreview" class="camera-preview" autoplay playsinline></video>
+                            <div class="camera-overlay">
+                                <div class="camera-viewfinder">
+                                    <div class="viewfinder-corner top-left"></div>
+                                    <div class="viewfinder-corner top-right"></div>
+                                    <div class="viewfinder-corner bottom-left"></div>
+                                    <div class="viewfinder-corner bottom-right"></div>
+                                    <div class="viewfinder-text">Position recycling symbol in frame</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="camera-controls">
+                            <button class="btn-camera-action" id="captureBtn">
+                                <i class="fas fa-camera"></i>
+                                Capture Photo
+                            </button>
+                            <button class="btn-camera-action secondary" id="switchCameraBtn" style="display: none;">
+                                <i class="fas fa-sync-alt"></i>
+                                Switch Camera
+                            </button>
+                        </div>
+                        
+                        <!-- Educational Note: Camera error/permission handling -->
+                        <div class="camera-error" id="cameraError" style="display: none;">
+                            <div class="error-content">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <h4>Camera Not Available</h4>
+                                <p id="cameraErrorText">Unable to access camera. Please check permissions or use file upload instead.</p>
+                                <button class="btn-fallback" onclick="switchToUpload()">
+                                    <i class="fas fa-upload"></i>
+                                    Use File Upload
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Educational Note: Upload interface -->
+                    <div class="upload-interface">
+                        <div class="upload-area" id="uploadArea">
+                            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                            <div class="upload-text">Drag & Drop Your Image Here</div>
+                            <div class="upload-hint">or click to browse your files</div>
+                            
+                            <div class="supported-formats">
+                                <span class="format-badge">JPEG</span>
+                                <span class="format-badge">PNG</span>
+                                <span class="format-badge">WebP</span>
+                            </div>
+                            
+                            <input type="file" 
+                                   id="fileInput" 
+                                   class="file-input" 
+                                   accept="image/jpeg,image/jpg,image/png,image/webp"
+                                   aria-label="Select image file for analysis">
+                        </div>
+                        
+                        <!-- Educational Note: Error display -->
+                        <div class="error-message" id="errorMessage"></div>
+                        
+                        <!-- Educational Note: Image preview -->
+                        <div class="image-preview-container" id="previewContainer">
+                            <img id="imagePreview" class="image-preview" alt="Preview of uploaded image">
+                            <div class="preview-actions">
+                                <button class="btn-analyze" id="analyzeBtn">
+                                    <i class="fas fa-brain"></i>
+                                    Analyze with AI
+                                </button>
+                                <button class="btn-remove" id="removeBtn">
+                                    <i class="fas fa-times"></i>
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Educational Note: Analysis progress -->
+                    <div class="analysis-section" id="analysisSection">
+                        <div style="text-align: center; margin-bottom: 1rem;">
+                            <h3 style="color: #2d7a2d;">
+                                <i class="fas fa-cog fa-spin"></i>
+                                Analyzing Image...
+                            </h3>
+                            <p style="color: #666;">AI is identifying recycling symbols and material types</p>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div id="progressText" style="text-align: center; color: #666; font-size: 0.9rem;"></div>
+                    </div>
+                    
+                    <!-- Educational Note: Analysis results -->
+                    <div class="analysis-result" id="analysisResult" style="display: none;">
+                        <!-- Results will be populated by JavaScript -->
+                    </div>
+                    
+                </div>
+            </section>
+            
+            <!-- Educational Note: Help and tips section -->
+            <section class="tips-section" style="margin-top: 3rem;">
+                <div class="container">
+                    <h3 style="text-align: center; color: #2d7a2d; margin-bottom: 2rem;">
+                        <i class="fas fa-lightbulb"></i>
+                        Tips for Better Recognition
+                    </h3>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; max-width: 1000px; margin: 0 auto;">
+                        <div class="educational-card">
+                            <div class="educational-title">
+                                <i class="fas fa-camera"></i>
+                                Image Quality
+                            </div>
+                            <ul style="color: #666; line-height: 1.6;">
+                                <li>Ensure good lighting on the recycling symbol</li>
+                                <li>Avoid shadows and reflections</li>
+                                <li>Keep the camera steady for sharp images</li>
+                                <li>Fill the frame with the symbol</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="educational-card">
+                            <div class="educational-title">
+                                <i class="fas fa-search"></i>
+                                Symbol Visibility
+                            </div>
+                            <ul style="color: #666; line-height: 1.6;">
+                                <li>Look for triangular recycling symbols</li>
+                                <li>Numbers 1-7 indicate plastic types</li>
+                                <li>Clean the surface if symbols are dirty</li>
+                                <li>Symbols are often on bottom of containers</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="educational-card">
+                            <div class="educational-title">
+                                <i class="fas fa-recycle"></i>
+                                Learning Goals
+                            </div>
+                            <ul style="color: #666; line-height: 1.6;">
+                                <li>Understand material properties and recycling</li>
+                                <li>Learn about environmental impact</li>
+                                <li>Practice AI technology applications</li>
+                                <li>Develop sustainability awareness</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+        </div>
+    </main>
+
+    <!-- Educational Note: JavaScript for scan functionality -->
+    <script src="../services/api.js"></script>
+    <script src="../components/upload.js"></script>
+    <script>
+        // Educational Note: Initialize scan page functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load current address context from localStorage or URL params
+            loadAddressContext();
+            
+            // Initialize camera functionality
+            initializeCameraInterface();
+            
+            // Initialize upload component
+            if (typeof UploadComponent !== 'undefined') {
+                const uploadConfig = {
+                    uploadArea: document.getElementById('uploadArea'),
+                    fileInput: document.getElementById('fileInput'),
+                    previewContainer: document.getElementById('previewContainer'),
+                    imagePreview: document.getElementById('imagePreview'),
+                    analyzeBtn: document.getElementById('analyzeBtn'),
+                    removeBtn: document.getElementById('removeBtn'),
+                    analysisSection: document.getElementById('analysisSection'),
+                    analysisResult: document.getElementById('analysisResult'),
+                    errorMessage: document.getElementById('errorMessage'),
+                    progressFill: document.getElementById('progressFill'),
+                    progressText: document.getElementById('progressText')
+                };
+                
+                // Educational Note: Make upload component globally accessible for camera integration
+                window.uploadComponent = new UploadComponent(uploadConfig);
+            } else {
+                console.warn('UploadComponent not loaded - basic functionality may be limited');
+            }
+        });
+        
+        // Educational Function: Load address context
+        function loadAddressContext() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const addressFromUrl = urlParams.get('address');
+                const pointsFromUrl = urlParams.get('points');
+                
+                // Try URL parameters first, then localStorage
+                const currentAddress = addressFromUrl || localStorage.getItem('currentAddress');
+                const currentPoints = pointsFromUrl || localStorage.getItem('currentPoints') || '0';
+                
+                if (currentAddress) {
+                    document.getElementById('current-address-display').textContent = currentAddress;
+                    document.getElementById('current-points-display').textContent = currentPoints;
+                } else {
+                    // Redirect to login if no address context
+                    console.warn('No address context found, redirecting to login');
+                    window.location.href = 'login.html';
+                }
+            } catch (error) {
+                console.error('Error loading address context:', error);
+                document.getElementById('current-address-display').textContent = 'Address not available';
+            }
+        }
+        
+        // Educational Note: Camera Interface Management
+        let cameraStream = null;
+        let currentCameraIndex = 0;
+        let availableCameras = [];
+        
+        /**
+         * Educational Function: Initialize Camera Interface
+         * 
+         * Sets up camera functionality and method switching
+         * Learn about: MediaDevices API, stream handling, UI state management
+         */
+        function initializeCameraInterface() {
+            console.log('🎥 Initializing camera interface...');
+            
+            // Get UI elements
+            const cameraBtn = document.getElementById('cameraBtn');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const cameraInterface = document.getElementById('cameraInterface');
+            const uploadInterface = document.querySelector('.upload-interface');
+            const captureBtn = document.getElementById('captureBtn');
+            const switchCameraBtn = document.getElementById('switchCameraBtn');
+            
+            // Educational Note: Set initial state (camera by default if available)
+            checkCameraAvailability().then(available => {
+                if (available) {
+                    showCameraInterface();
+                } else {
+                    showUploadInterface();
+                }
+            });
+            
+            // Educational Note: Method switching event listeners
+            cameraBtn.addEventListener('click', () => {
+                switchToCamera();
+                updateMethodButtons('camera');
+            });
+            
+            uploadBtn.addEventListener('click', () => {
+                switchToUpload();
+                updateMethodButtons('upload');
+            });
+            
+            // Educational Note: Camera control event listeners
+            captureBtn.addEventListener('click', capturePhoto);
+            switchCameraBtn.addEventListener('click', switchCamera);
+        }
+        
+        /**
+         * Educational Function: Check Camera Availability
+         * 
+         * Determines if device has camera access
+         * Learn about: navigator.mediaDevices, permissions, feature detection
+         */
+        async function checkCameraAvailability() {
+            try {
+                // Educational Note: Check if MediaDevices API is supported
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    console.log('📷 MediaDevices API not supported in this browser');
+                    return false;
+                }
+                
+                // Educational Note: Enumerate available cameras
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                availableCameras = devices.filter(device => device.kind === 'videoinput');
+                
+                console.log(`📷 Found ${availableCameras.length} camera(s)`);
+                return availableCameras.length > 0;
+                
+            } catch (error) {
+                console.error('❌ Error checking camera availability:', error);
+                return false;
+            }
+        }
+        
+        /**
+         * Educational Function: Switch to Camera Interface
+         * 
+         * Activates camera and shows camera UI
+         * Learn about: getUserMedia, video streams, error handling
+         */
+        async function switchToCamera() {
+            console.log('🎥 Switching to camera interface...');
+            
+            try {
+                // Educational Note: Request camera access
+                const constraints = {
+                    video: {
+                        facingMode: 'environment', // Prefer rear camera for scanning
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                };
+                
+                // Educational Note: Stop any existing stream
+                if (cameraStream) {
+                    stopCameraStream();
+                }
+                
+                // Educational Note: Get new camera stream
+                cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+                
+                const videoElement = document.getElementById('cameraPreview');
+                videoElement.srcObject = cameraStream;
+                
+                // Educational Note: Update UI to show camera
+                showCameraInterface();
+                hideCameraError();
+                
+                // Educational Note: Show switch camera button if multiple cameras
+                if (availableCameras.length > 1) {
+                    document.getElementById('switchCameraBtn').style.display = 'inline-flex';
+                }
+                
+                console.log('✅ Camera activated successfully');
+                
+            } catch (error) {
+                console.error('❌ Camera access failed:', error);
+                showCameraError(error);
+            }
+        }
+        
+        /**
+         * Educational Function: Switch to Upload Interface
+         * 
+         * Deactivates camera and shows file upload UI
+         * Learn about: stream cleanup, UI state management
+         */
+        function switchToUpload() {
+            console.log('📁 Switching to upload interface...');
+            
+            // Educational Note: Stop camera stream to free resources
+            if (cameraStream) {
+                stopCameraStream();
+            }
+            
+            // Educational Note: Update UI to show upload
+            showUploadInterface();
+            hideCameraError();
+        }
+        
+        /**
+         * Educational Function: Capture Photo from Camera
+         * 
+         * Takes a photo from video stream and processes it
+         * Learn about: Canvas API, image capture, blob processing
+         */
+        async function capturePhoto() {
+            const videoElement = document.getElementById('cameraPreview');
+            const captureBtn = document.getElementById('captureBtn');
+            
+            if (!cameraStream || !videoElement.videoWidth) {
+                console.error('❌ No active camera stream for capture');
+                return;
+            }
+            
+            try {
+                console.log('📸 Capturing photo...');
+                captureBtn.disabled = true;
+                captureBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Capturing...';
+                
+                // Educational Note: Create canvas for image capture
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Educational Note: Set canvas dimensions to match video
+                canvas.width = videoElement.videoWidth;
+                canvas.height = videoElement.videoHeight;
+                
+                // Educational Note: Draw current video frame to canvas
+                ctx.drawImage(videoElement, 0, 0);
+                
+                // Educational Note: Convert canvas to blob for upload
+                canvas.toBlob(async (blob) => {
+                    try {
+                        // Educational Note: Create file object from blob
+                        const file = new File([blob], `camera_capture_${Date.now()}.jpg`, {
+                            type: 'image/jpeg'
+                        });
+                        
+                        console.log('📷 Photo captured:', file.name, file.size, 'bytes');
+                        
+                        // Educational Note: Use existing upload component for processing
+                        if (typeof UploadComponent !== 'undefined' && window.uploadComponent) {
+                            // Stop camera and switch to preview
+                            stopCameraStream();
+                            
+                            // Process captured image through upload component
+                            await window.uploadComponent.processFile(file);
+                            
+                            // Switch to upload interface to show preview
+                            showUploadInterface();
+                            updateMethodButtons('upload');
+                            
+                        } else {
+                            console.error('❌ Upload component not available');
+                        }
+                        
+                    } catch (error) {
+                        console.error('❌ Photo processing failed:', error);
+                    } finally {
+                        // Educational Note: Reset capture button
+                        captureBtn.disabled = false;
+                        captureBtn.innerHTML = '<i class="fas fa-camera"></i> Capture Photo';
+                    }
+                }, 'image/jpeg', 0.8); // 80% quality for good balance
+                
+            } catch (error) {
+                console.error('❌ Photo capture failed:', error);
+                captureBtn.disabled = false;
+                captureBtn.innerHTML = '<i class="fas fa-camera"></i> Capture Photo';
+            }
+        }
+        
+        /**
+         * Educational Function: Switch Camera (front/back)
+         * 
+         * Cycles through available cameras
+         * Learn about: device enumeration, constraint management
+         */
+        async function switchCamera() {
+            if (availableCameras.length <= 1) return;
+            
+            try {
+                // Educational Note: Cycle to next camera
+                currentCameraIndex = (currentCameraIndex + 1) % availableCameras.length;
+                const selectedCamera = availableCameras[currentCameraIndex];
+                
+                console.log(`🔄 Switching to camera: ${selectedCamera.label}`);
+                
+                // Educational Note: Stop current stream
+                if (cameraStream) {
+                    stopCameraStream();
+                }
+                
+                // Educational Note: Request new camera stream
+                const constraints = {
+                    video: {
+                        deviceId: { exact: selectedCamera.deviceId },
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                };
+                
+                cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+                
+                const videoElement = document.getElementById('cameraPreview');
+                videoElement.srcObject = cameraStream;
+                
+                console.log('✅ Camera switched successfully');
+                
+            } catch (error) {
+                console.error('❌ Camera switch failed:', error);
+                showCameraError(error);
+            }
+        }
+        
+        /**
+         * Educational Function: Stop Camera Stream
+         * 
+         * Properly releases camera resources
+         * Learn about: resource cleanup, stream management
+         */
+        function stopCameraStream() {
+            if (cameraStream) {
+                console.log('🛑 Stopping camera stream...');
+                
+                // Educational Note: Stop all tracks to release camera
+                cameraStream.getTracks().forEach(track => {
+                    track.stop();
+                    console.log('🔕 Stopped track:', track.kind);
+                });
+                
+                cameraStream = null;
+                
+                // Educational Note: Clear video element
+                const videoElement = document.getElementById('cameraPreview');
+                if (videoElement) {
+                    videoElement.srcObject = null;
+                }
+            }
+        }
+        
+        /**
+         * Educational Function: UI State Management
+         * 
+         * Controls visibility of camera vs upload interfaces
+         * Learn about: DOM manipulation, UI state management
+         */
+        function showCameraInterface() {
+            document.getElementById('cameraInterface').style.display = 'block';
+            document.querySelector('.upload-interface').style.display = 'none';
+        }
+        
+        function showUploadInterface() {
+            document.getElementById('cameraInterface').style.display = 'none';
+            document.querySelector('.upload-interface').style.display = 'block';
+        }
+        
+        function updateMethodButtons(activeMethod) {
+            const cameraBtn = document.getElementById('cameraBtn');
+            const uploadBtn = document.getElementById('uploadBtn');
+            
+            // Educational Note: Update button states
+            cameraBtn.classList.toggle('active', activeMethod === 'camera');
+            uploadBtn.classList.toggle('active', activeMethod === 'upload');
+        }
+        
+        function showCameraError(error) {
+            const errorElement = document.getElementById('cameraError');
+            const errorText = document.getElementById('cameraErrorText');
+            
+            let message = 'Unable to access camera. ';
+            
+            // Educational Note: Provide specific error messages
+            if (error.name === 'NotAllowedError') {
+                message += 'Please allow camera permissions and refresh the page.';
+            } else if (error.name === 'NotFoundError') {
+                message += 'No camera found on this device.';
+            } else if (error.name === 'NotReadableError') {
+                message += 'Camera is being used by another application.';
+            } else {
+                message += 'Please check your camera settings and try again.';
+            }
+            
+            errorText.textContent = message;
+            errorElement.style.display = 'block';
+            
+            // Educational Note: Auto-switch to upload interface
+            setTimeout(() => {
+                switchToUpload();
+                updateMethodButtons('upload');
+            }, 3000);
+        }
+        
+        function hideCameraError() {
+            document.getElementById('cameraError').style.display = 'none';
+        }
+        
+        // Educational Note: Global function for fallback button
+        window.switchToUpload = switchToUpload;
+        
+        // Educational Note: Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (cameraStream) {
+                stopCameraStream();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+# Rescan - Educational .gitignore for Node.js Project
+# =================================================
+# This file tells git which files and folders to ignore when tracking changes.
+# Educational focus: Learn about version control best practices
+
+# === Node.js Dependencies ===
+# node_modules contains all downloaded packages from npm install
+# Never commit these - they're huge and can be recreated with 'npm install'
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# === Environment Configuration ===
+# .env files contain secrets like API keys and database passwords
+# Never commit real secrets to version control!
+.env
+.env.local
+.env.production
+
+# === Database Files ===
+# SQLite database files contain user data
+# For education: we might want to keep example data, but exclude real user data
+data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+
+# === Temporary Files ===
+# Uploaded images are processed then deleted - no need to track
+backend/public/uploads/*
+# Keep the directory but not the contents
+!backend/public/uploads/.gitkeep
+
+# === Build Output ===
+# Compiled/minified files that are generated from source
+dist/
+build/
+
+# === IDE and Editor Files ===
+# VS Code settings (we keep some for educational setup)
+.vscode/settings.json
+.vscode/launch.json
+# But keep educational workspace settings
+!.vscode/extensions.json
+!.vscode/tasks.json
+
+# === System Files ===
+# Operating system generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# === Testing ===
+# Coverage reports and test output
+coverage/
+.nyc_output
+
+# === Logs ===
+# Application logs (we keep educational logging in console)
+*.log
+logs/
+
+# === Documentation ===
+# Keep all educational documentation for learning
+# (Nothing excluded here - all docs are valuable for learning)
+
+# === Educational Notes ===
+# This gitignore helps students understand:
+# 1. What files are safe to share publicly
+# 2. Security considerations (API keys, databases)
+# 3. Performance considerations (node_modules size)
+# 4. Temporary vs. permanent files

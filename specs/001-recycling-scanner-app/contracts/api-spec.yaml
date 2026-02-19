@@ -1,0 +1,372 @@
+openapi: 3.0.3
+info:
+  title: Rescan - Recycling Scanner API
+  description: |
+    Educational web API for recycling awareness and environmental learning.
+    
+    Supports STEM class learning objectives:
+    - Database operations (CRUD with Address and ScanSession entities)
+    - AI/ML integration (Azure OpenAI for image analysis)
+    - HTTP REST patterns and API design
+    - Environmental impact tracking and gamification
+    
+    Priority Implementation Order:
+    - P1: Address operations (MVP database foundation)
+    - P2: Scan operations with manual upload (AI integration learning)  
+    - P3: Camera integration enhancement (device API learning)
+    - P4: Engagement features (UX enhancement)
+    
+  version: "1.0.0"
+  contact:
+    name: STEM Class Project
+    
+servers:
+  - url: http://localhost:3000/api
+    description: Development server for classroom use
+  - url: https://rescan-app.azurewebsites.net/api  
+    description: Production deployment for demonstration
+
+paths:
+  # P1 Priority: Address Management for MVP Database Foundation
+  /address/lookup:
+    post:
+      summary: Look up recycling points for address
+      description: |
+        **Educational Focus**: Demonstrates database lookup operations and user input handling.
+        
+        Core learning objectives:
+        - HTTP POST for data submission
+        - Database query operations  
+        - JSON request/response patterns
+        - Input validation and sanitization
+        
+        **User Story P1**: Basic address entry and points lookup
+      tags:
+        - Address Management
+        - P1 Priority
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - street_address
+              properties:
+                street_address:
+                  type: string
+                  maxLength: 255
+                  minLength: 5
+                  example: "123 Main Street, Anytown, ST 12345"
+                  description: User-entered street address for points lookup
+            examples:
+              new_address:
+                summary: New address (no existing points)
+                value:
+                  street_address: "456 Oak Avenue, Springfield, IL 62701"
+              existing_address:
+                summary: Address with existing points
+                value:
+                  street_address: "123 Main Street, Anytown, ST 12345"
+      responses:
+        '200':
+          description: Address lookup successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  street_address:
+                    type: string
+                    description: Normalized address from database
+                  points_total:
+                    type: integer
+                    minimum: 0
+                    description: Current recycling points for this address
+                  message:
+                    type: string
+                    description: Human-readable status for educational feedback
+                  first_visit:
+                    type: boolean
+                    description: True if this is a new address
+              examples:
+                new_address_response:
+                  summary: New address response
+                  value:
+                    street_address: "456 Oak Avenue, Springfield, IL 62701"
+                    points_total: 0
+                    message: "You have no points"
+                    first_visit: true
+                existing_address_response:
+                  summary: Existing address with points
+                  value:
+                    street_address: "123 Main Street, Anytown, ST 12345"  
+                    points_total: 450
+                    message: "You have earned 450 recycling points!"
+                    first_visit: false
+        '400':
+          description: Invalid address format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Invalid address format"
+                message: "Address must be at least 5 characters and include street information"
+                educational_tip: "Try including street number, name, city, and state"
+
+  # P2 Priority: Scan Operations for AI Integration Learning  
+  /scan/upload:
+    post:
+      summary: Upload image for recycling analysis
+      description: |
+        **Educational Focus**: Demonstrates AI integration and multipart form handling.
+        
+        Core learning objectives:
+        - File upload processing
+        - AI/ML API integration (Azure OpenAI)
+        - Image analysis and data extraction
+        - Business logic implementation (points calculation)
+        - Database transaction management
+        
+        **User Story P2**: Manual image upload and AI recognition
+      tags:
+        - Scan Operations
+        - P2 Priority
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - image
+                - address
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: JPG or PNG image containing recycling symbol
+                address:
+                  type: string
+                  maxLength: 255
+                  description: Street address for points tracking (must exist from P1)
+            examples:
+              valid_upload:
+                summary: Valid recycling symbol upload
+                value:
+                  address: "123 Main Street, Anytown, ST 12345"
+                  # image: [binary file data]
+      responses:
+        '200':
+          description: Image successfully analyzed and points awarded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session_id:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for this scan session
+                  material_type:
+                    type: string
+                    description: AI-identified material (e.g., "1 PET", "5 PP")
+                  is_recyclable:
+                    type: boolean
+                    description: True if recyclable in user's area
+                  points_awarded:
+                    type: integer
+                    enum: [10, 100]
+                    description: Points earned (100 recyclable, 10 non-recyclable)
+                  new_total:
+                    type: integer
+                    minimum: 0
+                    description: Updated total points for this address
+                  educational_message:
+                    type: string  
+                    description: Learning-focused feedback about recycling
+                  ai_confidence:
+                    type: number
+                    minimum: 0.0
+                    maximum: 1.0
+                    description: AI confidence in material identification
+              examples:
+                recyclable_item:
+                  summary: Successfully identified recyclable item
+                  value:
+                    session_id: "550e8400-e29b-41d4-a716-446655440000"
+                    material_type: "1 PET"
+                    is_recyclable: true
+                    points_awarded: 100
+                    new_total: 550
+                    educational_message: "Great work! PET plastic bottles are widely recyclable and can be made into new bottles, clothing, and carpets."
+                    ai_confidence: 0.92
+                non_recyclable_item:
+                  summary: Identified non-recyclable item
+                  value:
+                    session_id: "550e8400-e29b-41d4-a716-446655440001"
+                    material_type: "6 PS"
+                    is_recyclable: false
+                    points_awarded: 10
+                    new_total: 460
+                    educational_message: "Thanks for checking! Polystyrene (PS) unfortunately isn't accepted by most recycling programs, but you still earned points for environmental awareness!"
+                    ai_confidence: 0.87
+        '400':
+          description: Invalid image or missing data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                no_symbol_detected:
+                  summary: No recycling symbol found
+                  value:
+                    error: "No recycling symbol detected"
+                    message: "Could not identify a recycling symbol in the uploaded image"
+                    educational_tip: "Make sure the recycling symbol is clearly visible and well-lit. Look for numbers 1-7 inside a triangle made of arrows."
+                unsupported_format:
+                  summary: Invalid file format
+                  value:
+                    error: "Unsupported file format"  
+                    message: "Only JPG and PNG images are supported"
+                    educational_tip: "Most phone cameras save as JPG by default. Try taking a new photo."
+        '404':
+          description: Address not found - user must complete P1 first
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Address not found"
+                message: "Please enter your address on the main page first"
+                educational_tip: "The system needs to know your location to determine what's recyclable in your area"
+        '500':
+          description: AI service error or database failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "AI service unavailable"
+                message: "Unable to analyze image at this time"
+                educational_tip: "This could be a network issue or high usage. Try again in a few moments."
+
+  # P3 Priority: Camera Integration Enhancement (Future)
+  /scan/camera:
+    post:
+      summary: Process camera-captured image  
+      description: |
+        **Educational Focus**: Same as upload endpoint but optimized for real-time camera data.
+        
+        **User Story P3**: Camera integration for real-time scanning
+        
+        Note: Uses same backend processing as /scan/upload with camera-optimized handling.
+      tags:
+        - Scan Operations  
+        - P3 Priority
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - image_data
+                - address
+              properties:
+                image_data:
+                  type: string
+                  format: base64
+                  description: Base64-encoded image from camera API
+                address:
+                  type: string
+                  description: Address from current session
+      responses:
+        '200':
+          description: Same as /scan/upload
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1scan~1upload/post/responses/200/content/application~1json/schema'
+
+  # Health check for educational monitoring
+  /health:
+    get:
+      summary: API health check
+      description: |
+        **Educational Focus**: Demonstrates API monitoring and system health concepts.
+        
+        Teaching objectives:
+        - HTTP GET requests
+        - System status monitoring  
+        - JSON response structure
+        - Basic debugging techniques
+      tags:
+        - System Monitoring
+      responses:
+        '200':
+          description: API is healthy and operational
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy]
+                  timestamp:
+                    type: string
+                    format: date-time
+                  database_connected:
+                    type: boolean
+                    description: Database connectivity status
+                  ai_service_available:
+                    type: boolean
+                    description: Azure OpenAI service status
+              example:
+                status: "healthy"
+                timestamp: "2026-02-19T14:30:00Z"
+                database_connected: true
+                ai_service_available: true
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Machine-readable error code
+        message: 
+          type: string
+          description: Human-readable error description
+        educational_tip:
+          type: string
+          description: Learning-focused guidance for students
+        debug_info:
+          type: object
+          description: Additional debugging information (development only)
+      example:
+        error: "validation_failed"
+        message: "The provided data did not meet requirements"
+        educational_tip: "Check that all required fields are filled out correctly"
+
+  securitySchemes:
+    # For production deployment learning (P4)
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Simple API key for production deployment education
+
+# Educational tags for learning organization
+tags:
+  - name: Address Management
+    description: P1 Priority - Database operations and user input handling
+  - name: Scan Operations  
+    description: P2/P3 Priority - AI integration and image processing
+  - name: System Monitoring
+    description: Supporting functionality for system health and debugging

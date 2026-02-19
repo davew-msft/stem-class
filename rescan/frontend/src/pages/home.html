@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Rescan - Learn recycling and earn points by scanning recyclable items in your area">
+    <meta name="keywords" content="recycling, education, environmental, STEM, sustainability">
+    <title>Rescan - Home | Recycling Education</title>
+    
+    <!-- Educational Note: External CSS for responsive design -->
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    
+    <!-- Educational Note: Icons for better user experience -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- Educational Note: Semantic HTML structure for accessibility -->
+    <header class="site-header">
+        <div class="container">
+            <!-- Educational Note: Logo and branding -->
+            <div class="site-branding">
+                <h1 class="site-title">
+                    <i class="fas fa-recycle" aria-hidden="true"></i>
+                    Rescan
+                </h1>
+                <p class="site-tagline">Learn Recycling. Earn Points. Save the Planet.</p>
+            </div>
+            
+            <!-- Educational Note: Navigation accessible to screen readers -->
+            <nav class="main-navigation" role="navigation" aria-label="Main Navigation">
+                <ul class="nav-menu">
+                    <li><a href="home.html" class="nav-link active" aria-current="page">Home</a></li>
+                    <li><a href="#about" class="nav-link">About</a></li>
+                    <li><a href="login.html" class="nav-link">Start Scanning</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Educational Note: Main content area with semantic sections -->
+    <main class="main-content" role="main">
+        
+        <!-- Educational Note: Hero section with engaging question -->
+        <section class="hero-section">
+            <div class="container">
+                <div class="hero-content">
+                    <!-- Educational Note: Primary heading for SEO and accessibility -->
+                    <h2 class="hero-title">
+                        <i class="fas fa-coins" aria-hidden="true"></i>
+                        Do you want to reduce your tax bill?
+                    </h2>
+                    
+                    <!-- Educational Note: Explanatory text for educational context -->
+                    <div class="hero-description">
+                        <p class="hero-text">
+                            Many areas offer tax incentives for environmentally-friendly activities like recycling! 
+                            Learn about recycling in your area while earning points and discovering potential benefits.
+                        </p>
+                        
+                        <!-- Educational Note: Educational callout box -->
+                        <div class="educational-note">
+                            <i class="fas fa-lightbulb" aria-hidden="true"></i>
+                            <strong>Did you know?</strong> 
+                            Some municipalities provide tax deductions or credits for verified recycling activities. 
+                            Start tracking your environmental impact today!
+                        </div>
+                    </div>
+                    
+                    <!-- Educational Note: Call-to-action buttons with clear actions -->
+                    <div class="hero-actions">
+                        <button 
+                            id="yesButton" 
+                            class="btn btn-primary btn-large"
+                            aria-describedby="yes-button-description"
+                        >
+                            <i class="fas fa-thumbs-up" aria-hidden="true"></i>
+                            Yes! Let's Start Recycling
+                        </button>
+                        
+                        <button 
+                            id="noButton" 
+                            class="btn btn-secondary btn-large"
+                            aria-describedby="no-button-description"  
+                        >
+                            <i class="fas fa-video" aria-hidden="true"></i>
+                            No, Show Me Something Fun
+                        </button>
+                    </div>
+                    
+                    <!-- Educational Note: Hidden descriptions for screen readers -->
+                    <div id="yes-button-description" class="sr-only">
+                        Navigate to address entry page to start your recycling journey
+                    </div>
+                    <div id="no-button-description" class="sr-only">
+                        Watch an entertaining video about environmental awareness
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Educational Note: Information section about the application -->
+        <section class="info-section" id="about">
+            <div class="container">
+                <div class="info-grid">
+                    <!-- Educational Note: Feature cards for user understanding -->
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-camera" aria-hidden="true"></i>
+                        </div>
+                        <h3 class="feature-title">Scan & Learn</h3>
+                        <p class="feature-description">
+                            Use your camera or upload photos to identify recycling symbols and learn about materials.
+                        </p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                        </div>
+                        <h3 class="feature-title">Local Information</h3>
+                        <p class="feature-description">
+                            Get recycling information specific to your street address and local facilities.
+                        </p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-trophy" aria-hidden="true"></i>
+                        </div>
+                        <h3 class="feature-title">Earn Points</h3>
+                        <p class="feature-description">
+                            Track your environmental impact with points for every item you research and recycle.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Educational Note: Fun video section (hidden by default) -->
+        <section class="fun-video-section" id="funVideoSection" style="display: none;">
+            <div class="container">
+                <div class="video-content">
+                    <h3 class="video-title">
+                        <i class="fas fa-play-circle" aria-hidden="true"></i>
+                        Environmental Fun!
+                    </h3>
+                    
+                    <!-- Educational Note: Responsive iframe for video embedding -->
+                    <div class="video-wrapper">
+                        <iframe 
+                            id="funVideo"
+                            width="560" 
+                            height="315" 
+                            src=""
+                            title="Environmental Awareness Video"
+                            frameborder="0" 
+                            allowfullscreen
+                            aria-label="Educational video about environmental conservation"
+                        ></iframe>
+                    </div>
+                    
+                    <!-- Educational Note: Back to home action -->
+                    <div class="video-actions">
+                        <button id="backToQuestionButton" class="btn btn-outline">
+                            <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                            Back to Question
+                        </button>
+                        
+                        <button id="changeMyMindButton" class="btn btn-primary">
+                            <i class="fas fa-recycle" aria-hidden="true"></i>
+                            Changed My Mind - Let's Recycle!
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Educational Note: Site footer with educational context -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4 class="footer-title">Educational Project</h4>
+                    <p class="footer-text">
+                        This application is designed for STEM education, teaching environmental awareness 
+                        through recycling identification and gamification.
+                    </p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4 class="footer-title">Learning Objectives</h4>
+                    <ul class="footer-list">
+                        <li>Environmental Science</li>
+                        <li>Web Development</li>
+                        <li>Database Operations</li>
+                        <li>AI Integration</li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4 class="footer-title">Technical Skills</h4>
+                    <ul class="footer-list">
+                        <li>HTML & CSS</li>
+                        <li>JavaScript</li>
+                        <li>API Integration</li>
+                        <li>Image Recognition</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Educational Note: Copyright and educational disclaimer -->
+            <div class="footer-bottom">
+                <p class="copyright">
+                    © 2026 Rescan Educational Project. Built for learning and environmental awareness.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Educational Note: JavaScript for interactive functionality -->
+    <script src="../assets/js/app.js"></script>
+    
+    <!-- Educational Note: Inline script for home page specific functionality -->
+    <script>
+        /**
+         * Educational JavaScript: Home Page Interactions
+         * 
+         * Learn about: DOM manipulation, event handling, navigation patterns
+         */
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🏠 Home page loaded - initializing interactions');
+            
+            // Educational Note: Get button elements for interaction
+            const yesButton = document.getElementById('yesButton');
+            const noButton = document.getElementById('noButton');
+            const heroSection = document.querySelector('.hero-section');
+            const funVideoSection = document.getElementById('funVideoSection');
+            const funVideoIframe = document.getElementById('funVideo');
+            const backButton = document.getElementById('backToQuestionButton');
+            const changeMindButton = document.getElementById('changeMyMindButton');
+            
+            /**
+             * Educational Function: Handle "Yes" Button Click
+             * 
+             * Navigate to login page for address entry
+             * Learn about: page navigation, user flow design
+             */
+            yesButton.addEventListener('click', function() {
+                console.log('✅ User chose to start recycling - navigating to login page');
+                
+                // Educational Note: Show loading state
+                yesButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                yesButton.disabled = true;
+                
+                // Educational Note: Small delay for better UX, then navigate
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 500);
+            });
+            
+            /**
+             * Educational Function: Handle "No" Button Click
+             * 
+             * Show fun video as engagement feature
+             * Learn about: conditional content display, iframe embedding
+             */
+            noButton.addEventListener('click', function() {
+                console.log('🎬 User chose fun video - displaying entertainment content');
+                
+                // Educational Note: Hide hero section and show video
+                heroSection.style.display = 'none';
+                funVideoSection.style.display = 'block';
+                
+                // Educational Note: Load educational/fun video from YouTube
+                const videoUrl = 'https://www.youtube.com/embed/ggh7CmlZR_M?autoplay=1'; // Environmental awareness video
+                funVideoIframe.src = videoUrl;
+                
+                // Educational Note: Smooth scroll to video
+                funVideoSection.scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            });
+            
+            /**
+             * Educational Function: Handle Back Button
+             * 
+             * Return from video to original question
+             * Learn about: state management, content toggling
+             */
+            backButton.addEventListener('click', function() {
+                console.log('⬅️ User returning to main question');
+                
+                // Educational Note: Hide video and show hero section
+                funVideoSection.style.display = 'none';
+                heroSection.style.display = 'block';
+                
+                // Educational Note: Stop video playback
+                funVideoIframe.src = '';
+                
+                // Educational Note: Scroll back to top
+                heroSection.scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            });
+            
+            /**
+             * Educational Function: Handle "Changed Mind" Button
+             * 
+             * Navigate to login page from video section
+             * Learn about: alternative user paths, conversion optimization
+             */
+            changeMindButton.addEventListener('click', function() {
+                console.log('🔄 User changed mind from video - navigating to login page');
+                
+                // Educational Note: Show loading state
+                changeMindButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                changeMindButton.disabled = true;
+                
+                // Educational Note: Navigate to login page
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 500);
+            });
+            
+            // Educational Note: Log page analytics for learning purposes
+            console.log('📊 Home page analytics initialized');
+            console.log('   - Hero section visible:', heroSection.style.display !== 'none');
+            console.log('   - Video section hidden:', funVideoSection.style.display === 'none');
+        });
+    </script>
+</body>
+</html>

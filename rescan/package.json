@@ -1,0 +1,69 @@
+{
+  "name": "rescan-recycling-scanner",
+  "version": "1.0.0",
+  "description": "Educational recycling scanner web application for STEM learning. Students learn full-stack development while building environmental awareness tools.",
+  "main": "backend/src/api/server.js",
+  "scripts": {
+    "dev": "node backend/src/api/server.js",
+    "start": "node backend/src/api/server.js",
+    "db:setup": "node backend/src/config/setupDatabase.js",
+    "db:reset": "rm -f data/rescan.db && npm run db:setup",
+    "test:manual": "echo 'Run manual testing scenarios from frontend/tests/manual/test-scenarios.md'",
+    "lint": "eslint backend/src/**/*.js frontend/src/**/*.js",
+    "format": "prettier --write backend/src/**/*.js frontend/src/**/*.{js,html,css}"
+  },
+  "keywords": [
+    "recycling",
+    "education",
+    "STEM",
+    "environmental-awareness",
+    "AI-integration",
+    "web-development",
+    "full-stack",
+    "nodejs",
+    "express",
+    "sqlite"
+  ],
+  "author": "STEM Class Project",
+  "license": "MIT",
+  "dependencies": {
+    "@azure/openai": "^1.0.0-beta.8",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "joi": "^17.11.0",
+    "multer": "^1.4.5-lts.1",
+    "openai": "^6.22.0",
+    "sqlite3": "^5.1.6",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "nodemon": "^3.0.2",
+    "prettier": "^3.1.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "Educational project for STEM class recycling awareness"
+  },
+  "educational": {
+    "learningObjectives": [
+      "Database operations with SQLite",
+      "REST API development with Express.js",
+      "AI/ML integration with Azure OpenAI",
+      "Responsive web design",
+      "Environmental science concepts",
+      "Full-stack JavaScript development"
+    ],
+    "difficulty": "Intermediate",
+    "estimatedDuration": "6-8 class periods",
+    "prerequisites": [
+      "Basic HTML, CSS, JavaScript",
+      "Understanding of HTTP and APIs",
+      "Database concepts fundamentals"
+    ]
+  }
+}
