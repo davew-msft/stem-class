@@ -1,0 +1,55 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true
+  },
+  "extends": [
+    "eslint:recommended"
+  ],
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "rules": {
+    // Educational rules to encourage good practices
+    "no-console": "off",
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "prefer-const": "error",
+    "no-var": "error",
+    
+    // Formatting rules (handled by Prettier, but good for learning)
+    "indent": ["error", 2],
+    "quotes": ["error", "single"],
+    "semi": ["error", "always"],
+    
+    // Best practices for students
+    "eqeqeq": "error",
+    "no-trailing-spaces": "error",
+    "no-multiple-empty-lines": ["error", { "max": 2 }],
+    
+    // Helpful for debugging
+    "no-debugger": "warn"
+  },
+  "overrides": [
+    {
+      // Frontend JavaScript files
+      "files": ["frontend/src/**/*.js"],
+      "env": {
+        "browser": true,
+        "node": false
+      },
+      "globals": {
+        "fetch": "readonly"
+      }
+    },
+    {
+      // Backend JavaScript files  
+      "files": ["backend/src/**/*.js"],
+      "env": {
+        "browser": false,
+        "node": true
+      }
+    }
+  ]
+}

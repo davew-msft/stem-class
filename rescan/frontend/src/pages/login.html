@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Enter your address to track recycling points and start your environmental journey">
+    <meta name="keywords" content="recycling, points, address, environmental tracking, STEM education">
+    <title>Rescan - Address Entry | Start Your Recycling Journey</title>
+    
+    <!-- Educational Note: External CSS for responsive design -->
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    
+    <!-- Educational Note: Icons for better user experience -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- Educational Note: Semantic HTML structure for accessibility -->
+    <header class="site-header">
+        <div class="container">
+            <!-- Educational Note: Logo and branding with back navigation -->
+            <div class="site-branding">
+                <a href="home.html" class="back-link" aria-label="Return to home page">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                </a>
+                <h1 class="site-title">
+                    <i class="fas fa-recycle" aria-hidden="true"></i>
+                    Rescan
+                </h1>
+                <p class="site-tagline">Address Entry & Points Tracking</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Educational Note: Main content area with form sections -->
+    <main class="main-content" role="main">
+        
+        <!-- Educational Note: Address entry section -->
+        <section class="address-entry-section">
+            <div class="container">
+                <div class="address-form-container">
+                    
+                    <!-- Educational Note: Form introduction and instructions -->
+                    <div class="form-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                            Enter Your Street Address
+                        </h2>
+                        
+                        <div class="form-description">
+                            <p class="description-text">
+                                Enter your street address to track your recycling points and get 
+                                location-specific recycling information.
+                            </p>
+                            
+                            <!-- Educational Note: Educational context about address tracking -->
+                            <div class="educational-note">
+                                <i class="fas fa-info-circle" aria-hidden="true"></i>
+                                <strong>New Jersey addresses only:</strong> 
+                                This educational project focuses on NJ recycling programs. Enter your NJ address to 
+                                track recycling points and learn about local environmental impact.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Educational Note: Address entry form with validation -->
+                    <form id="addressForm" class="address-form" novalidate>
+                        <div class="form-group">
+                            <label for="streetAddress" class="form-label">
+                                <i class="fas fa-home" aria-hidden="true"></i>
+                                Street Address
+                            </label>
+                            
+                            <input 
+                                type="text" 
+                                id="streetAddress" 
+                                name="streetAddress" 
+                                class="form-input"
+                                placeholder="Enter your New Jersey address (e.g., 123 Main St, Newark, NJ)"
+                                required
+                                autocomplete="street-address"
+                                aria-describedby="address-help address-error"
+                            >
+                            
+                            <!-- Educational Note: Help text for user guidance -->
+                            <div id="address-help" class="form-help">
+                                <i class="fas fa-lightbulb" aria-hidden="true"></i>
+                                NJ Examples: 123 Oak St, Trenton, NJ • 456 Maple Ave, Jersey City, New Jersey
+                            </div>
+                            
+                            <!-- Educational Note: Error message container -->
+                            <div id="address-error" class="form-error" aria-live="polite" style="display: none;">
+                                <!-- Error messages will be inserted here by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Educational Note: Form submission button -->
+                        <div class="form-actions">
+                            <button type="submit" id="submitButton" class="btn btn-primary btn-large">
+                                <i class="fas fa-search" aria-hidden="true"></i>
+                                Look Up My Points
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Educational Note: Results display section (hidden by default) -->
+        <section class="results-section" id="resultsSection" style="display: none;">
+            <div class="container">
+                <div class="results-container">
+                    
+                    <!-- Educational Note: Points display area -->
+                    <div class="points-display" id="pointsDisplay">
+                        <!-- Points information will be inserted here by JavaScript -->
+                    </div>
+                    
+                    <!-- Educational Note: Next steps actions -->
+                    <div class="next-steps" id="nextSteps">
+                        <h3 class="next-steps-title">
+                            <i class="fas fa-rocket" aria-hidden="true"></i>
+                            Ready to Start Scanning?
+                        </h3>
+                        
+                        <div class="action-buttons">
+                            <button id="scanItemButton" class="btn btn-success btn-large">
+                                <i class="fas fa-camera" aria-hidden="true"></i>
+                                Scan an Item and Earn Points
+                            </button>
+                            
+                            <button id="tryAnotherAddressButton" class="btn btn-outline">
+                                <i class="fas fa-edit" aria-hidden="true"></i>
+                                Try Another Address
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Educational Note: Loading state section -->
+        <section class="loading-section" id="loadingSection" style="display: none;">
+            <div class="container">
+                <div class="loading-container">
+                    <div class="loading-content">
+                        <i class="fas fa-spinner fa-spin loading-spinner" aria-hidden="true"></i>
+                        <h3 class="loading-title">Looking Up Your Address...</h3>
+                        <p class="loading-text">
+                            We're checking our database for your recycling points and preparing 
+                            your personalized environment impact report.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Educational Note: Educational information section -->
+        <section class="info-section">
+            <div class="container">
+                <div class="info-grid">
+                    <!-- Educational Note: How points work -->
+                    <div class="info-card">
+                        <div class="info-icon">
+                            <i class="fas fa-star" aria-hidden="true"></i>
+                        </div>
+                        <h3 class="info-title">How Points Work</h3>
+                        <ul class="info-list">
+                            <li>Recyclable items: <strong>100 points</strong></li>
+                            <li>Non-recyclable items: <strong>10 points</strong> (for learning)</li>
+                            <li>Special materials: <strong>Bonus points</strong></li>
+                            <li>Weekly challenges: <strong>Extra rewards</strong></li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Educational Note: Privacy and data -->
+                    <div class="info-card">
+                        <div class="info-icon">
+                            <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                        </div>
+                        <h3 class="info-title">Your Privacy</h3>
+                        <ul class="info-list">
+                            <li>Only street address is stored</li>
+                            <li>No personal information required</li>
+                            <li>Data used for educational purposes</li>
+                            <li>Local recycling center information</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Educational Note: Learning goals -->
+                    <div class="info-card">
+                        <div class="info-icon">
+                            <i class="fas fa-graduation-cap" aria-hidden="true"></i>
+                        </div>
+                        <h3 class="info-title">Learning Goals</h3>
+                        <ul class="info-list">
+                            <li>Identify recycling symbols</li>
+                            <li>Understand local recycling rules</li>
+                            <li>Track environmental impact</li>
+                            <li>Build sustainable habits</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Educational Note: Site footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4 class="footer-title">Getting Started</h4>
+                    <p class="footer-text">
+                        Enter your address above to begin tracking your recycling impact 
+                        and learning about environmental responsibility.
+                    </p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4 class="footer-title">Educational Value</h4>
+                    <p class="footer-text">
+                        This project teaches web development, database operations, 
+                        AI integration, and environmental science concepts.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Educational Note: JavaScript for interactive functionality -->
+    <script src="../assets/js/app.js"></script>
+    
+    <!-- Educational Note: Inline script for login page specific functionality -->
+    <script>
+        /**
+         * Educational JavaScript: Address Entry and Points Lookup
+         * 
+         * Learn about: form validation, API calls, DOM manipulation, error handling
+         */
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔐 Login page loaded - initializing address entry functionality');
+            
+            // Educational Note: Get DOM elements for interaction
+            const addressForm = document.getElementById('addressForm');
+            const streetAddressInput = document.getElementById('streetAddress');
+            const submitButton = document.getElementById('submitButton');
+            const addressError = document.getElementById('address-error');
+            const loadingSection = document.getElementById('loadingSection');
+            const resultsSection = document.getElementById('resultsSection');
+            const pointsDisplay = document.getElementById('pointsDisplay');
+            const scanItemButton = document.getElementById('scanItemButton');
+            const tryAnotherButton = document.getElementById('tryAnotherAddressButton');
+
+            /**
+             * Educational Function: Validate Address Input
+             * 
+             * Validates user input before API submission
+             * Learn about: client-side validation, user experience
+             */
+            function validateAddressInput(address) {
+                // Educational Note: Clear previous errors
+                hideError();
+                
+                // Educational Note: Check for empty input
+                if (!address || address.trim().length === 0) {
+                    showError('Please enter a street address');
+                    return false;
+                }
+                
+                // Educational Note: Check minimum length for meaningful address
+                if (address.trim().length < 5) {
+                    showError('Please enter a complete street address (at least 5 characters)');
+                    return false;
+                }
+                
+                // Educational Note: Simple pattern check for valid address format
+                const addressPattern = /^[a-zA-Z0-9\s,.-]+$/;
+                if (!addressPattern.test(address)) {
+                    showError('Please enter a valid street address using only letters, numbers, spaces, and common punctuation');
+                    return false;
+                }
+                
+                console.log('✅ Address validation passed for:', address.trim());
+                return true;
+            }
+
+            /**
+             * Educational Function: Show Error Message
+             * 
+             * Displays validation errors to user
+             * Learn about: user feedback, accessibility
+             */
+            function showError(message) {
+                addressError.innerHTML = `
+                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                    ${message}
+                `;
+                addressError.style.display = 'block';
+                streetAddressInput.classList.add('error');
+                streetAddressInput.setAttribute('aria-invalid', 'true');
+                console.log('❌ Validation error:', message);
+            }
+
+            /**
+             * Educational Function: Hide Error Message
+             * 
+             * Clears error display when input is corrected
+             * Learn about: dynamic UI updates, accessibility
+             */
+            function hideError() {
+                addressError.style.display = 'none';
+                streetAddressInput.classList.remove('error');
+                streetAddressInput.setAttribute('aria-invalid', 'false');
+            }
+
+            /**
+             * Educational Function: Show Loading State
+             * 
+             * Provides visual feedback during API calls
+             * Learn about: user experience, asynchronous operations
+             */
+            function showLoading() {
+                loadingSection.style.display = 'block';
+                resultsSection.style.display = 'none';
+                
+                // Educational Note: Disable form during loading
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Looking up...';
+                
+                console.log('⏳ Loading state activated');
+            }
+
+            /**
+             * Educational Function: Hide Loading State
+             * 
+             * Restores normal UI after API completion
+             * Learn about: state management, user interface
+             */
+            function hideLoading() {
+                loadingSection.style.display = 'none';
+                
+                // Educational Note: Re-enable form
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-search"></i> Look Up My Points';
+                
+                console.log('✅ Loading state deactivated');
+            }
+
+            /**
+             * Educational Function: Display Points Results
+             * 
+             * Shows user's current points or new address message
+             * Learn about: data presentation, conditional content
+             */
+            function displayResults(addressData) {
+                const { address, exists, message } = addressData.result;
+                
+                // Educational Note: Build results display HTML
+                let resultsHTML = '';
+                
+                if (exists) {
+                    // Educational Note: Existing address with points
+                    resultsHTML = `
+                        <div class="points-card points-existing">
+                            <div class="points-header">
+                                <h3 class="points-title">
+                                    <i class="fas fa-trophy" aria-hidden="true"></i>
+                                    Welcome Back!
+                                </h3>
+                                <p class="points-address">${address.street_address}</p>
+                            </div>
+                            
+                            <div class="points-value">
+                                <span class="points-number">${address.points_total}</span>
+                                <span class="points-label">Recycling Points</span>
+                            </div>
+                            
+                            <div class="points-message">
+                                <i class="fas fa-info-circle" aria-hidden="true"></i>
+                                ${message}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Educational Note: New address with no points
+                    resultsHTML = `
+                        <div class="points-card points-new">
+                            <div class="points-header">
+                                <h3 class="points-title">
+                                    <i class="fas fa-star" aria-hidden="true"></i>
+                                    Welcome to Rescan!
+                                </h3>
+                                <p class="points-address">${address.street_address}</p>
+                            </div>
+                            
+                            <div class="points-value">
+                                <span class="points-number">0</span>
+                                <span class="points-label">Recycling Points</span>
+                            </div>
+                            
+                            <div class="points-message">
+                                <i class="fas fa-seedling" aria-hidden="true"></i>
+                                You have no points yet - but let's change that! Start scanning recyclable 
+                                items to earn points and learn about environmental responsibility.
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                pointsDisplay.innerHTML = resultsHTML;
+                resultsSection.style.display = 'block';
+                
+                // Educational Note: Store address data for scan page context
+                localStorage.setItem('lastAddressLookup', JSON.stringify(address));
+                
+                // Educational Note: Smooth scroll to results
+                resultsSection.scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+                
+                console.log('📊 Results displayed for address:', addressData.street_address);
+            }
+
+            /**
+             * Educational Function: Handle API Errors
+             * 
+             * Provides user-friendly error messages for API failures
+             * Learn about: error handling, user communication
+             */
+            function handleApiError(error) {
+                console.error('❌ API Error:', error);
+                
+                // Educational Note: Show user-friendly error message
+                showError(
+                    'We couldn\'t look up your address right now. Please check your connection and try again.'
+                );
+                
+                hideLoading();
+            }
+
+            /**
+             * Educational Function: Submit Address for Lookup
+             * 
+             * Handles form submission and API call
+             * Learn about: form handling, API integration, async/await
+             */
+            async function submitAddress(address) {
+                showLoading();
+                
+                try {
+                    console.log('🌐 Making API call for address:', address);
+                    
+                    // Educational Note: Call to address lookup API
+                    const response = await fetch(`/api/address/lookup?street_address=${encodeURIComponent(address)}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`API returned ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const data = await response.json();
+                    console.log('✅ API response received:', data);
+                    
+                    if (data.success) {
+                        displayResults(data.data);
+                    } else {
+                        throw new Error(data.error?.message || 'Unknown API error');
+                    }
+                    
+                } catch (error) {
+                    handleApiError(error);
+                } finally {
+                    hideLoading();
+                }
+            }
+
+            // Educational Note: Form submission event handler
+            addressForm.addEventListener('submit', function(e) {
+                e.preventDefault(); // Educational Note: Prevent default form submission
+                
+                const address = streetAddressInput.value.trim();
+                console.log('📝 Form submitted with address:', address);
+                
+                if (validateAddressInput(address)) {
+                    submitAddress(address);
+                }
+            });
+
+            // Educational Note: Real-time validation on input
+            streetAddressInput.addEventListener('input', function() {
+                if (addressError.style.display === 'block') {
+                    hideError(); // Clear errors as user types
+                }
+            });
+
+            // Educational Note: "Try Another Address" button functionality
+            tryAnotherButton.addEventListener('click', function() {
+                console.log('🔄 User wants to try another address');
+                
+                // Educational Note: Clear form and results
+                streetAddressInput.value = '';
+                streetAddressInput.focus();
+                resultsSection.style.display = 'none';
+                hideError();
+                
+                // Educational Note: Scroll back to form
+                addressForm.scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            });
+
+            // Educational Note: "Scan Item" button functionality
+            scanItemButton.addEventListener('click', function() {
+                console.log('📸 User wants to scan an item - navigating to scan page');
+                
+                // Educational Note: Get current address data for context
+                const currentAddressDisplay = document.querySelector('.points-result .address-info .street-address');
+                const currentPointsDisplay = document.querySelector('.points-result .current-points');
+                
+                if (currentAddressDisplay && currentPointsDisplay) {
+                    const addressText = currentAddressDisplay.textContent.trim();
+                    const pointsText = currentPointsDisplay.textContent.trim();
+                    
+                    // Educational Note: Store address context in localStorage
+                    localStorage.setItem('currentAddress', addressText);
+                    localStorage.setItem('currentPoints', pointsText);
+                    
+                    // Educational Note: Extract address ID if available (for API calls)
+                    const addressData = JSON.parse(localStorage.getItem('lastAddressLookup') || '{}');
+                    if (addressData.id) {
+                        localStorage.setItem('currentAddressId', addressData.id);
+                    }
+                    
+                    console.log('💾 Stored address context:', { address: addressText, points: pointsText });
+                    
+                    // Educational Note: Navigate to scan page with context
+                    window.location.href = `scan.html?address=${encodeURIComponent(addressText)}&points=${encodeURIComponent(pointsText)}`;
+                } else {
+                    console.warn('⚠️ Address context not found, navigating without parameters');
+                    window.location.href = 'scan.html';
+                }
+            });
+
+            // Educational Note: Focus on address input for better UX
+            streetAddressInput.focus();
+            
+            console.log('✅ Login page JavaScript initialized successfully');
+        });
+    </script>
+</body>
+</html>
