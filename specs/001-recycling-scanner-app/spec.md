@@ -41,6 +41,8 @@ A user visits the website, navigates through the home page, enters their street 
 
 **Independent Test**: Can be fully tested by entering an address and verifying database lookup works correctly. Delivers immediate value by showing users their environmental impact score.
 
+I only want this to work for NJ addresses.  
+
 **Acceptance Scenarios**:
 
 1. **Given** user visits home page, **When** they click "Yes" to reducing tax bill, **Then** they are taken to login page

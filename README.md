@@ -65,6 +65,18 @@ Would you like to try it out? You can upload a picture of the object, and I’ll
 * https://github.com/github/spec-kit
 * might be better to do _the documentation up front_ vs vibe coding which is _constant prompt refinement_.  Less _cowboy_ and more _astronaut_.  
 
+## How to Get rescan working on this machine
+
+
+```bash
+open vscode
+
+cd stem-class
+cd rescan
+code .
+```
+
+
 ## How to Get This Working on Your Machine
 
 Get it working on a given machine:

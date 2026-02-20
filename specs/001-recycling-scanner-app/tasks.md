@@ -85,6 +85,9 @@ description: "Task list template for feature implementation"
 - [X] T031 [US1] Test existing address lookup → verify correct points display
 - [ ] T032 [US1] Test address validation → verify helpful error messages
 - [ ] T033 [US1] Test responsive design → verify mobile and desktop functionality
+- [ ] T086 [US1] Test valid NJ address entry → verify acceptance (e.g., "123 Main St, Newark, NJ")
+- [ ] T087 [US1] Test invalid non-NJ address → verify rejection with educational error message
+- [ ] T088 [US1] Test NJ address variations → verify "New Jersey" and "NJ" both work
 
 **Checkpoint**: At this point, User Story 1 should be fully functional - users can enter addresses and see points totals
 

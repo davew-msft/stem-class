@@ -8,6 +8,7 @@
 const express = require('express');
 const router = express.Router();
 const dbService = require('../../services/dbService');
+const { Address } = require('../../models/address'); // Destructure Address from exports
 
 /**
  * Educational Endpoint: Address Lookup
@@ -52,6 +53,26 @@ router.get('/lookup', async (req, res) => {
           details: 'The provided street_address parameter is empty or not a valid string'
         },
         educational_note: 'Input validation prevents invalid data from reaching the database'
+      });
+    }
+
+    // Educational Note: NEW - NJ Geographic Validation
+    const addressValidation = Address.validateAddressString(street_address);
+    if (!addressValidation.isValid) {
+      console.log(`❌ Address validation failed for: "${street_address}" - ${addressValidation.errors.join(', ')}`);
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'NJ_ADDRESS_REQUIRED',
+          message: 'Only New Jersey addresses are supported',
+          details: addressValidation.errors,
+          examples: [
+            '123 Main Street, Newark, NJ',
+            '456 Oak Avenue, Trenton, New Jersey',
+            '789 Pine Road, Jersey City, NJ 07302'
+          ]
+        },
+        educational_note: 'Geographic restrictions teach real-world data constraints and regional service limitations'
       });
     }
 

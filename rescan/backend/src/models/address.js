@@ -158,6 +158,7 @@ class Address {
    * Educational Static Method: Validate Address Input
    * 
    * Demonstrates static validation without object creation
+   * UPDATED: Now includes NJ geographic restriction validation
    * 
    * @param {string} address - Address to validate
    * @returns {Object} Validation result
@@ -184,10 +185,22 @@ class Address {
       errors.push('Address contains invalid characters');
     }
     
+    // Educational Note: NEW - NJ Geographic Restriction Validation
+    if (normalized.length > 0) {
+      const hasNJ = /\bnj\b|\bnew jersey\b/.test(normalized);
+      if (!hasNJ) {
+        errors.push('Only New Jersey addresses are supported. Please include "NJ" or "New Jersey" in your address.');
+      }
+    }
+    
     return {
       isValid: errors.length === 0,
       errors: errors,
-      normalized: normalized
+      normalized: normalized,
+      educational: {
+        note: 'NJ address validation teaches geographic data constraints',
+        tip: 'Try addresses like: "123 Main St, Newark, NJ" or "456 Oak Ave, Trenton, New Jersey"'
+      }
     };
   }
 }

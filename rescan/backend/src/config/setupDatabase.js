@@ -106,13 +106,13 @@ async function createTables(dbService) {
 async function createSampleData(dbService) {
     console.log('📝 Creating sample data for testing...');
     
-    // Educational Note: Sample addresses for testing
+    // Educational Note: Sample NJ addresses for testing
     const sampleAddresses = [
         {
             id: 'addr-sample-123',
-            street_address: '123 Main Street',
-            latitude: 40.7128,
-            longitude: -74.0060,
+            street_address: '123 Main Street, Newark, NJ',
+            latitude: 40.7357,
+            longitude: -74.1724,
             total_points: 150,
             scan_count: 3,
             created_at: new Date().toISOString(),
@@ -120,9 +120,9 @@ async function createSampleData(dbService) {
         },
         {
             id: 'addr-sample-456',
-            street_address: '456 Oak Avenue',
-            latitude: 40.7580,
-            longitude: -73.9855,
+            street_address: '456 Oak Avenue, Trenton, New Jersey',
+            latitude: 40.2206,
+            longitude: -74.7563,
             total_points: 85,
             scan_count: 2,
             created_at: new Date().toISOString(),
