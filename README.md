@@ -76,6 +76,21 @@ cd rescan
 code .
 ```
 
+to update brian's code with new code....
+
+```bash
+git pull
+
+```
+
+if you want to send dave your changes:  
+
+```bash
+git commit -am"dave, I made changes"
+git push
+
+```
+
 
 ## How to Get This Working on Your Machine
 
