@@ -1,0 +1,32 @@
+# Kubernetes ConfigMap for Rescan Application
+# Educational Note: ConfigMaps store non-sensitive configuration data as key-value pairs
+# Separates configuration from container images, enabling environment-specific deployments
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rescan-config
+  namespace: rescan
+  labels:
+    app: rescan
+data:
+  # Server configuration
+  PORT: "3000"
+  NODE_ENV: "production"
+  
+  # Educational mode flag
+  EDUCATIONAL_MODE: "true"
+  
+  # Database configuration
+  # Educational Note: Path is relative to container's WORKDIR (/app)
+  DATABASE_URL: "sqlite:./data/rescan.db"
+  
+  # File upload limits
+  MAX_FILE_SIZE: "5242880"  # 5MB in bytes
+  MAX_CONCURRENT_REQUESTS: "5"
+  
+  # Educational Note:
+  # - Change NODE_ENV to "development" for dev deployments
+  # - Update ConfigMap with: kubectl apply -f configmap.yaml
+  # - Pods will NOT automatically reload - requires restart:
+  #   kubectl rollout restart deployment/rescan-app -n rescan

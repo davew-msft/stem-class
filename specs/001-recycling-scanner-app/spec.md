@@ -107,6 +107,7 @@ A user who clicks "No" on the tax reduction question gets redirected to a fun vi
 
 **FR2 - AI-Powered Material Recognition**  
 - Integration with Azure OpenAI GPT-4o model
+- Integration with Azure OpenAI must use RBAC auth, or anything but API key auth, which is disabled for our Azure environments.  
 - Image analysis identifies RIC symbols and material types
 - System determines local recyclability based on address
 - Returns material type (e.g., "1 PET", "5 PP") and recyclability status
@@ -127,6 +128,10 @@ A user who clicks "No" on the tax reduction question gets redirected to a fun vi
 - Primary: Real-time camera capture
 - Fallback: Manual JPG/PNG upload
 - Both methods feed into same AI processing pipeline
+
+**FR6 - Application must be containerized with docker**
+- application is deployed with docker.  One container is fine, otherwise, orchestrate everything with kubernetes
+- Any "state" such as databases and image files should be stored in a folder outside of the container and mounted as a volume
 
 ## Success Criteria *(mandatory)*
 

@@ -1,0 +1,68 @@
+# Kubernetes PersistentVolumeClaim for Rescan Application
+# Educational Note: PVCs request persistent storage that survives pod restarts
+# Kubernetes automatically binds PVC to an available PersistentVolume
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: rescan-data-pvc
+  namespace: rescan
+  labels:
+    app: rescan
+    component: storage
+spec:
+  # Access mode defines how the volume can be mounted
+  # ReadWriteOnce (RWO): mounted read-write by single node
+  # ReadOnlyMany (ROX): mounted read-only by many nodes
+  # ReadWriteMany (RWX): mounted read-write by many nodes
+  # 
+  # Educational Note: SQLite requires RWO (only one writer)
+  accessModes:
+    - ReadWriteOnce
+  
+  # Storage class determines the type of volume provisioned
+  # Leave blank to use cluster default
+  # Common options: local-path, hostpath, gp2 (AWS), standard (GKE)
+  storageClassName: ""  # Use cluster default
+  
+  # Storage request
+  resources:
+    requests:
+      storage: 1Gi  # 1 Gigabyte for SQLite database and metadata
+  
+  # Volume mode: Filesystem (default) or Block
+  volumeMode: Filesystem
+
+---
+# Educational Notes:
+#
+# 1. PVC Lifecycle:
+#    - Pending: Waiting for PV to bind
+#    - Bound: Successfully attached to a PV
+#    - Lost: PV deleted but PVC still exists
+#
+# 2. Check PVC status:
+#    kubectl get pvc -n rescan
+#    kubectl describe pvc rescan-data-pvc -n rescan
+#
+# 3. Data Persistence:
+#    - Data survives pod deletions and restarts
+#    - Data persists across Deployment updates
+#    - Data is DELETED when PVC is deleted (unless PV has 'Retain' policy)
+#
+# 4. Backup Strategy:
+#    - Manual: kubectl exec into pod, copy /app/data/resc an.db
+#    - Automated: Use Velero or snapshot capabilities of storage class
+#    - Example manual backup:
+#      kubectl exec -n rescan $(kubectl get pod -n rescan -l app=rescan -o jsonpath='{.items[0].metadata.name}') -- \
+#        cat /app/data/rescan.db > rescan-backup.db
+#
+# 5. Storage Classes (environment-specific):
+#    - Local development (kind/minikube): 'local-path' or 'standard'
+#    - AWS EKS: 'gp2', 'gp3', 'io1'
+#    - Azure AKS: 'default', 'managed-premium'
+#    - GCP GKE: 'standard', 'premium'
+#
+# 6. SQLite Constraints:
+#    - Only 1 pod can write (use Deployment replicas: 1)
+#    - For horizontal scaling, migrate to PostgreSQL/MySQL with RWX volumes

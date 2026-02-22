@@ -81,8 +81,8 @@ description: "Task list template for feature implementation"
 - [X] T029 [US1] Style responsive forms and feedback messages with educational clarity
 
 **US1 Manual Testing Scenarios**:
-- [X] T030 [US1] Test new address entry → verify "You have no points" message  
-- [X] T031 [US1] Test existing address lookup → verify correct points display
+- [ ] T030 [US1] Test new address entry → verify "You have no points" message  
+- [ ] T031 [US1] Test existing address lookup → verify correct points display
 - [ ] T032 [US1] Test address validation → verify helpful error messages
 - [ ] T033 [US1] Test responsive design → verify mobile and desktop functionality
 - [ ] T086 [US1] Test valid NJ address entry → verify acceptance (e.g., "123 Main St, Newark, NJ")
@@ -101,21 +101,21 @@ description: "Task list template for feature implementation"
 
 ### Implementation for User Story 2
 
-- [X] T034 [P] [US2] Create ScanSession model with validation in backend/src/models/scanSession.js  
-- [X] T035 [P] [US2] Configure multer middleware for image uploads in backend/src/api/routes/scan.js
-- [X] T036 [P] [US2] Implement Azure OpenAI service integration in backend/src/services/aiService.js
-- [X] T037 [US2] Create image upload endpoint `/api/scan/upload` with file validation
-- [X] T038 [US2] Implement AI prompt engineering for RIC symbol identification
-- [X] T039 [US2] Add image analysis response parsing and confidence scoring
-- [X] T040 [US2] Implement points calculation logic (100 recyclable, 10 non-recyclable)
-- [X] T041 [US2] Create database transaction for scan recording and points update
-- [X] T042 [US2] Add educational error handling for AI service failures
-- [X] T043 [P] [US2] Create scan page with upload interface in frontend/src/pages/scan.html
-- [X] T044 [P] [US2] Implement file upload component in frontend/src/components/upload.js
-- [X] T045 [US2] Add image preview and upload progress indicators
-- [X] T046 [US2] Implement scan results display with educational feedback
-- [X] T047 [US2] Style scan interface with drag-and-drop and progress animations
-- [X] T048 [US2] Add navigation from address lookup to scan page
+- [ ] T034 [P] [US2] Create ScanSession model with validation in backend/src/models/scanSession.js  
+- [ ] T035 [P] [US2] Configure multer middleware for image uploads in backend/src/api/routes/scan.js
+- [ ] T036 [P] [US2] Implement Azure OpenAI service integration in backend/src/services/aiService.js
+- [ ] T037 [US2] Create image upload endpoint `/api/scan/upload` with file validation
+- [ ] T038 [US2] Implement AI prompt engineering for RIC symbol identification
+- [ ] T039 [US2] Add image analysis response parsing and confidence scoring
+- [ ] T040 [US2] Implement points calculation logic (100 recyclable, 10 non-recyclable)
+- [ ] T041 [US2] Create database transaction for scan recording and points update
+- [ ] T042 [US2] Add educational error handling for AI service failures
+- [ ] T043 [P] [US2] Create scan page with upload interface in frontend/src/pages/scan.html
+- [ ] T044 [P] [US2] Implement file upload component in frontend/src/components/upload.js
+- [ ] T045 [US2] Add image preview and upload progress indicators
+- [ ] T046 [US2] Implement scan results display with educational feedback
+- [ ] T047 [US2] Style scan interface with drag-and-drop and progress animations
+- [ ] T048 [US2] Add navigation from address lookup to scan page
 
 **US2 Manual Testing Scenarios**:
 - [ ] T049 [US2] Test recyclable item upload → verify 100 points awarded and educational message
