@@ -86,6 +86,97 @@ function createApp() {
         next();
     });
     
+    // Educational Note: Helper function to check database connectivity
+    // This is used by Kubernetes health and readiness probes
+    async function checkDatabaseConnection() {
+        try {
+            // Test if dbService is initialized and can query
+            const testQuery = () => new Promise((resolve, reject) => {
+                if (!dbService.db) {
+                    reject(new Error('Database not initialized'));
+                    return;
+                }
+                dbService.db.get('SELECT 1 as test', [], (err, row) => {
+                    if (err) reject(err);
+                    else resolve(row && row.test === 1);
+                });
+            });
+            
+            return await testQuery();
+        } catch (error) {
+            console.error('❌ Database health check failed:', error.message);
+            return false;
+        }
+    }
+    
+    // Educational Note: Health check endpoint for Kubernetes liveness probe
+    // This endpoint tells Kubernetes if the application process is alive
+    // If this fails repeatedly, Kubernetes will restart the pod
+    app.get('/health', (req, res) => {
+        res.status(200).json({
+            status: 'ok',
+            timestamp: new Date().toISOString(),
+            uptime: process.uptime(),
+            version: process.env.npm_package_version || '1.0.0',
+            educational: {
+                message: 'Rescan Educational Server is running!',
+                students: 'This endpoint is used for Kubernetes liveness probe',
+                purpose: 'Checks if the application process is alive',
+                note: 'If this fails, Kubernetes will restart the pod'
+            }
+        });
+    });
+    
+    // Educational Note: Readiness check endpoint for Kubernetes readiness probe
+    // This endpoint tells Kubernetes if the application is ready to serve traffic
+    // If this fails, Kubernetes will stop sending traffic to this pod
+    app.get('/ready', async (req, res) => {
+        try {
+            const dbConnected = await checkDatabaseConnection();
+            
+            if (dbConnected) {
+                res.status(200).json({
+                    status: 'ready',
+                    timestamp: new Date().toISOString(),
+                    checks: {
+                        database: 'connected',
+                        server: 'running'
+                    },
+                    educational: {
+                        message: 'Application is ready to serve requests!',
+                        students: 'This endpoint is used for Kubernetes readiness probe',
+                        purpose: 'Checks if app can handle traffic (database connected)',
+                        note: 'Pod receives traffic only when this returns 200 OK'
+                    }
+                });
+            } else {
+                res.status(503).json({
+                    status: 'not ready',
+                    timestamp: new Date().toISOString(),
+                    checks: {
+                        database: 'disconnected',
+                        server: 'running'
+                    },
+                    educational: {
+                        message: 'Application is not ready - database unavailable',
+                        students: 'Kubernetes will not send traffic until this is fixed',
+                        purpose: 'Prevents requests during database issues'
+                    }
+                });
+            }
+        } catch (error) {
+            res.status(503).json({
+                status: 'not ready',
+                error: error.message,
+                timestamp: new Date().toISOString(),
+                educational: {
+                    message: 'Readiness check failed',
+                    students: 'Check database configuration and connectivity'
+                }
+            });
+        }
+    });
+    
     // Educational Note: Mount API routes
     app.use('/api', apiRoutes);
     console.log('✅ API routes mounted at /api');

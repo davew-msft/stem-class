@@ -1,0 +1,118 @@
+# ============================================================================
+# Docker Ignore File for Rescan Application
+# ============================================================================
+# Educational Note: This file tells Docker which files to exclude from the
+# build context. Smaller context = faster builds and smaller images.
+
+# Node.js Dependencies
+# Educational Note: Never copy node_modules - install fresh in container
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment Configuration
+# Educational Note: Never include secrets in images - use secrets management
+.env
+.env.local
+.env.*.local
+*.env
+
+# Git Repository
+# Educational Note: No need for Git history in containers
+.git/
+.gitignore
+.gitattributes
+
+# IDE and Editor Files
+# Educational Note: Development tools not needed in production
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing and Development
+# Educational Note: Test files don't belong in production images
+tests/
+test/
+*.test.js
+*.spec.js
+coverage/
+
+# Documentation
+# Educational Note: Documentation is for developers, not needed in container
+README.md
+CHANGELOG.md
+LICENSE
+*.md
+docs/
+
+# Build Output and Logs
+# Educational Note: Clean builds in container
+dist/
+build/
+*.log
+logs/
+
+# Temporary Files
+# Educational Note: Start fresh in container
+tmp/
+temp/
+*.tmp
+
+# Database Files
+# Educational Note: Database should use PersistentVolume in Kubernetes
+data/*.db
+data/*.db-journal
+*.sqlite3
+
+# Upload Directory Content
+# Educational Note: Uploads should be ephemeral or use PersistentVolume
+backend/public/uploads/*
+!backend/public/uploads/.gitkeep
+
+# Speckit Artifacts
+# Educational Note: Planning docs not needed in runtime
+.specify/
+specs/
+
+# Docker Files
+# Educational Note: Don't include Docker files in Docker context
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Kubernetes Manifests
+# Educational Note: K8s configs applied separately, not in image
+k8s/
+*.yaml
+*.yml
+
+# CI/CD Configuration
+# Educational Note: Build configs not needed in container
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Package Manager Lock Files (Keep package-lock.json!)
+# Educational Note: We need package-lock.json for reproducible builds
+# yarn.lock
+
+# ============================================================================
+# Educational Notes:
+# ============================================================================
+# 
+# Why exclude these files?
+# 1. Security: Never include .env files or secrets
+# 2. Size: Smaller images download and start faster
+# 3. Cache: Better layer caching = faster builds
+# 4. Clean: Only production-necessary files
+#
+# Check what's being copied:
+# docker build -t test . --progress=plain
+#
+# View image layers and size:
+# docker history rescan:v1.0.0
+# ============================================================================

@@ -1,0 +1,44 @@
+# Kubernetes Namespace for Rescan Application
+# Educational Note: Namespaces provide logical isolation between applications
+# Useful for separating dev, staging, and production environments
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rescan
+  labels:
+    name: rescan
+    environment: production
+    app: rescan
+  annotations:
+    description: "Educational recycling scanner application namespace"
+
+---
+# Educational Notes:
+#
+# 1. Why use namespaces?
+#    - Organize resources by application or environment
+#    - Apply resource quotas and limits per namespace
+#    - Control access with RBAC policies
+#    - Avoid name conflicts between teams/projects
+#
+# 2. Create namespace:
+#    kubectl create namespace rescan
+#    OR: kubectl apply -f namespace.yaml
+#
+# 3. View resources in namespace:
+#    kubectl get all -n rescan
+#    kubectl get pods -n rescan
+#
+# 4. Set default namespace (optional):
+#    kubectl config set-context --current --namespace=rescan
+#    Now 'kubectl get pods' shows pods in 'rescan' namespace
+#
+# 5. Delete namespace (WARNING: deletes ALL resources):
+#    kubectl delete namespace rescan
+#
+# 6. Multiple environments pattern:
+#    - rescan-dev: Development environment
+#    - rescan-staging: Staging/test environment
+#    - rescan-prod: Production environment
+#    Each with its own resources, ConfigMaps, Secrets

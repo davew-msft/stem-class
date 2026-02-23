@@ -20,7 +20,7 @@ By building this project, students will master:
 ### Prerequisites
 - **Node.js 18+** ([Download](https://nodejs.org/))
 - **VS Code** ([Download](https://code.visualstudio.com/))
-- **Azure OpenAI API access** (instructor will provide)
+- **Azure OpenAI with Azure AD auth** (instructor will provide Service Principal credentials)
 
 ### Setup Instructions
 
@@ -34,7 +34,13 @@ By building this project, students will master:
 2. **Configure Environment**
    ```bash
    cp .env.example .env
-   # Edit .env with your Azure OpenAI credentials (ask instructor)
+   # Edit .env with your Azure AD Service Principal credentials:
+   # - AZURE_TENANT_ID: Your Azure AD tenant ID
+   # - AZURE_CLIENT_ID: Service Principal application ID
+   # - AZURE_CLIENT_SECRET: Service Principal secret value
+   # - AZURE_OPENAI_ENDPOINT: Your Azure OpenAI resource endpoint
+   # - AZURE_OPENAI_DEPLOYMENT_NAME: Your GPT-4 Vision deployment name
+   # (Ask instructor for these values)
    ```
 
 3. **Initialize Database**
@@ -155,10 +161,14 @@ curl -X POST http://localhost:3000/api/scan/upload \\
 
 ### Common Issues
 
-**Database locked error**
+**Dzure AD authentication errors**
 ```bash
-# Solution: Close any open database connections
-rm data/rescan.db && npm run db:setup
+# Check .env file has all required Azure AD credentials
+cat .env | grep AZURE
+
+# Verify Service Principal has "Cognitive Services User" role on Azure OpenAI resource
+# Common error: "401 Unauthorized" means invalid credentials or insufficient permissions
+# Common error: "403 Forbidden" means Service Principal lacks required role assignment db:setup
 ```
 
 **API key errors**

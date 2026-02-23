@@ -2,17 +2,24 @@
  * AI Service for Recycling Symbol Recognition
  * 
  * Educational Focus:
- * - Azure OpenAI integration patterns
+ * - Azure OpenAI integration patterns with Entra ID authentication
  * - Image analysis and machine learning concepts
  * - Error handling in AI systems
  * - Confidence scoring and validation
  * - Educational prompt engineering techniques
+ * - Azure AD (Entra ID) Service Principal authentication
  * 
  * This service demonstrates how to integrate AI into educational applications
  * while maintaining proper error handling and educational value.
+ * 
+ * Authentication: Uses Azure AD (Entra ID) with Service Principal
+ * - Requires: AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET
+ * - More secure than API keys for production environments
+ * - Supports Azure RBAC and Managed Identity patterns
  */
 
 const { OpenAI } = require('openai');
+const { ClientSecretCredential } = require('@azure/identity');
 const fs = require('fs').promises;
 const path = require('path');
 const logger = require('../utils/logger');
@@ -26,41 +33,82 @@ class AIService {
   }
 
   /**
-   * Initialize Azure OpenAI client with educational error handling
+   * Initialize Azure OpenAI client with Azure AD (Entra ID) authentication
+   * 
+   * Educational Note: This uses Service Principal authentication which is more secure
+   * than API keys and supports Azure role-based access control (RBAC)
    */
   async initialize() {
     try {
-      if (!process.env.AZURE_OPENAI_API_KEY) {
-        logger.warn('Azure OpenAI API key not configured - using mock responses for educational demonstration');
+      // Educational Note: Check for required Azure AD credentials
+      const requiredEnvVars = {
+        AZURE_TENANT_ID: process.env.AZURE_TENANT_ID,
+        AZURE_CLIENT_ID: process.env.AZURE_CLIENT_ID,
+        AZURE_CLIENT_SECRET: process.env.AZURE_CLIENT_SECRET,
+        AZURE_OPENAI_ENDPOINT: process.env.AZURE_OPENAI_ENDPOINT,
+        AZURE_OPENAI_DEPLOYMENT_NAME: process.env.AZURE_OPENAI_DEPLOYMENT_NAME
+      };
+
+      const missingVars = Object.entries(requiredEnvVars)
+        .filter(([key, value]) => !value)
+        .map(([key]) => key);
+
+      if (missingVars.length > 0) {
+        logger.warn(`Azure AD credentials not configured - missing: ${missingVars.join(', ')}`);
+        logger.warn('Using mock responses for educational demonstration');
         this.isInitialized = false;
         return false;
       }
 
-      if (!process.env.AZURE_OPENAI_ENDPOINT) {
-        logger.warn('Azure OpenAI endpoint not configured - using mock responses');
-        this.isInitialized = false;
-        return false;
+      // Educational Note: Create Azure AD credential using Service Principal
+      // This is more secure than API keys and supports Azure RBAC
+      const credential = new ClientSecretCredential(
+        process.env.AZURE_TENANT_ID,
+        process.env.AZURE_CLIENT_ID,
+        process.env.AZURE_CLIENT_SECRET
+      );
+
+      logger.info('Azure AD credential created successfully');
+      logger.info(`Endpoint: ${process.env.AZURE_OPENAI_ENDPOINT}`);
+      logger.info(`Deployment: ${process.env.AZURE_OPENAI_DEPLOYMENT_NAME}`);
+
+      // Get Azure AD token
+      const tokenResponse = await credential.getToken('https://cognitiveservices.azure.com/.default');
+      
+      if (!tokenResponse || !tokenResponse.token) {
+        throw new Error('Failed to obtain Azure AD token');
       }
 
-      // Initialize Azure OpenAI client
+      logger.info('Azure AD token obtained successfully');
+
+      // Educational Note: Initialize OpenAI client for Azure with Azure AD authentication
+      // The openai SDK supports Azure OpenAI natively
       this.client = new OpenAI({
-        apiKey: process.env.AZURE_OPENAI_API_KEY,
+        apiKey: tokenResponse.token,
         baseURL: `${process.env.AZURE_OPENAI_ENDPOINT}/openai/deployments/${process.env.AZURE_OPENAI_DEPLOYMENT_NAME}`,
-        defaultQuery: { 'api-version': '2024-02-15-preview' },
+        defaultQuery: { 'api-version': '2024-10-01-preview' },
         defaultHeaders: {
-          'api-key': process.env.AZURE_OPENAI_API_KEY,
+          'Authorization': `Bearer ${tokenResponse.token}`
         }
       });
+
+      // Store credential for potential token refresh
+      this.credential = credential;
+
+      // Store deployment name for use in requests
+      this.deploymentName = process.env.AZURE_OPENAI_DEPLOYMENT_NAME;
 
       // Test the connection with a simple request
       await this.testConnection();
       
       this.isInitialized = true;
-      logger.info('Azure OpenAI service initialized successfully');
+      logger.info('Azure OpenAI service initialized successfully with Azure AD authentication');
+      logger.info('Educational Note: Using Service Principal authentication (more secure than API keys)');
       return true;
 
     } catch (error) {
       logger.error('Failed to initialize Azure OpenAI service:', error);
+      logger.error('Educational Note: Check Azure AD Service Principal credentials and permissions');
       this.isInitialized = false;
       return false;
     }
@@ -74,8 +122,11 @@ class AIService {
       throw new Error('OpenAI client not initialized');
     }
 
+    logger.info('Testing connection to Azure OpenAI...');
+    logger.info(`Deployment: ${this.deploymentName}`);
+    
+    // For OpenAI SDK with Azure, don't pass model when deployment is in baseURL
     const response = await this.client.chat.completions.create({
-      model: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'gpt-4o',
       messages: [{ role: 'user', content: 'Test connection - respond with "OK"' }],
       max_tokens: 10
     });
@@ -85,6 +136,7 @@ class AIService {
     }
 
     logger.info('Azure OpenAI connection test successful');
+    logger.info(`Response: ${response.choices[0].message.content}`);
   }
 
   /**

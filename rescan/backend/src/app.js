@@ -145,19 +145,96 @@ function createApp() {
   // =========================================================================
   console.log('🛤️ Setting up API routes...');
   
-  // Educational Note: Health check endpoint for monitoring
+  // Educational Note: Helper function to check database connectivity
+  // This is used by Kubernetes health and readiness probes
+  async function checkDatabaseConnection() {
+    try {
+      const { createConnection } = require('./config/database');
+      const db = await createConnection();
+      
+      // Simple query to verify database is accessible
+      return new Promise((resolve, reject) => {
+        db.get('SELECT 1 as test', [], (err, row) => {
+          if (err) {
+            console.error('❌ Database health check failed:', err.message);
+            reject(err);
+          } else {
+            resolve(row && row.test === 1);
+          }
+        });
+      });
+    } catch (error) {
+      console.error('❌ Database connection check failed:', error.message);
+      return false;
+    }
+  }
+  
+  // Educational Note: Health check endpoint for Kubernetes liveness probe
+  // This endpoint tells Kubernetes if the application process is alive
+  // If this fails repeatedly, Kubernetes will restart the pod
   app.get('/health', (req, res) => {
     res.json({
-      status: 'healthy',
+      status: 'ok',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       version: process.env.npm_package_version || '1.0.0',
       educational: {
         message: 'Rescan Educational Server is running!',
-        students: 'Check console logs to see request processing',
+        students: 'This endpoint is used for Kubernetes liveness probe',
+        purpose: 'Checks if the application process is alive',
         database: config.database.filename
       }
     });
+  });
+  
+  // Educational Note: Readiness check endpoint for Kubernetes readiness probe
+  // This endpoint tells Kubernetes if the application is ready to serve traffic
+  // If this fails, Kubernetes will stop sending traffic to this pod
+  app.get('/ready', async (req, res) => {
+    try {
+      const dbConnected = await checkDatabaseConnection();
+      
+      if (dbConnected) {
+        res.status(200).json({
+          status: 'ready',
+          timestamp: new Date().toISOString(),
+          checks: {
+            database: 'connected',
+            server: 'running'
+          },
+          educational: {
+            message: 'Application is ready to serve requests!',
+            students: 'This endpoint is used for Kubernetes readiness probe',
+            purpose: 'Checks if app can handle traffic (database connected)',
+            note: 'Pod receives traffic only when this returns 200 OK'
+          }
+        });
+      } else {
+        res.status(503).json({
+          status: 'not ready',
+          timestamp: new Date().toISOString(),
+          checks: {
+            database: 'disconnected',
+            server: 'running'
+          },
+          educational: {
+            message: 'Application is not ready - database unavailable',
+            students: 'Kubernetes will not send traffic until this is fixed',
+            purpose: 'Prevents requests during database issues'
+          }
+        });
+      }
+    } catch (error) {
+      res.status(503).json({
+        status: 'not ready',
+        error: error.message,
+        timestamp: new Date().toISOString(),
+        educational: {
+          message: 'Readiness check failed',
+          students: 'Check database configuration and connectivity'
+        }
+      });
+    }
   });
   
   // Educational Note: Mount API routes

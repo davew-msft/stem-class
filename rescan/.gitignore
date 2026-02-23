@@ -65,6 +65,14 @@ coverage/
 *.log
 logs/
 
+# === Docker & Kubernetes ===
+# Docker and Kubernetes configuration (keep templates, exclude secrets)
+# Keep: Dockerfile, .dockerignore, k8s/*.yaml templates
+k8s/secret.yaml
+# Exclude real secrets - only commit .example files
+*.secret.yaml
+!*.secret.yaml.example
+
 # === Documentation ===
 # Keep all educational documentation for learning
 # (Nothing excluded here - all docs are valuable for learning)
