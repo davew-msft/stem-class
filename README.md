@@ -172,3 +172,9 @@ then:
 * 123 Main Street, Newark, NJ
 * 456 Oak Avenue, Trenton, New Jersey
 * 71 mt tabor way, ocean grove NJ
+
+## Sample Recycling Scanned Images
+
+* [almost totally illegible "5"](./samples/5.png)
+* [LDPE that isn't labeled "LDPE"](./samples/ldpe.png)
+* [straightforward "1"](./samples/recycle.png)

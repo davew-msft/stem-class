@@ -31,6 +31,11 @@ backend/public/uploads/*
 # Keep the directory but not the contents
 !backend/public/uploads/.gitkeep
 
+# === Scan Uploads ===
+# Keep the scans-uploads directory (via .gitkeep) but ignore all contents
+scans-uploads/*
+!scans-uploads/.gitkeep
+
 # === Build Output ===
 # Compiled/minified files that are generated from source
 dist/

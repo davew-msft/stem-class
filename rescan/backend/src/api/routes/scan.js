@@ -12,8 +12,7 @@ const fs = require('fs').promises;
 const router = express.Router();
 const logger = require('../../utils/logger');
 
-// Import ScanSession model and AI service
-const ScanSession = require('../../models/scanSession');
+// Import AI service
 const aiService = require('../../services/aiService');
 
 /**
@@ -186,108 +185,91 @@ router.post('/upload', upload.single('image'), handleMulterError, async (req, re
     uploadedFilePath = req.file.path;
     logger.info(`Processing upload - File: ${req.file.originalname}, Size: ${req.file.size} bytes`);
 
+    // Educational Note: Save a debug copy to scans-uploads/ with address-timestamp naming
+    try {
+      const addressText = req.body.address || 'unknown-address';
+      // Sanitize address for use as filename (replace non-alphanumeric chars with underscores)
+      const sanitizedAddress = addressText.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').substring(0, 100);
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const extension = path.extname(req.file.originalname).toLowerCase() || '.jpg';
+      const debugFilename = `${sanitizedAddress}-${timestamp}${extension}`;
+      
+      const debugDir = path.join(__dirname, '../../../../scans-uploads');
+      await fs.mkdir(debugDir, { recursive: true });
+      await fs.copyFile(uploadedFilePath, path.join(debugDir, debugFilename));
+      logger.info(`Debug copy saved: scans-uploads/${debugFilename}`);
+    } catch (debugError) {
+      logger.warn('Failed to save debug copy:', debugError.message);
+    }
+
     // Educational Note: Get address ID from request (optional)
     const addressId = req.body.address_id || null;
     
-    // Educational Note: Create initial scan session record
-    const scanData = {
-      address_id: addressId,
-      image_path: uploadedFilePath,
-      original_filename: req.file.originalname,
-      file_size: req.file.size,
-      mime_type: req.file.mimetype,
-      status: 'processing'
-    };
+    // Educational Note: Generate a simple scan ID for tracking
+    const scanId = `scan_${Date.now()}_${Math.round(Math.random() * 1E9)}`;
     
-    logger.info('Creating scan session:', scanData);
-    const scanSession = await ScanSession.create(scanData);
+    logger.info('Processing scan:', { scanId, addressId, file: req.file.originalname });
     
     // Educational Note: Process image with AI service
-    logger.info(`Starting AI analysis for scan ID: ${scanSession.id}`);
+    logger.info(`Starting AI analysis for scan ID: ${scanId}`);
     
     try {
-      const aiResult = await aiService.analyzeImage(uploadedFilePath, {
-        filename: req.file.originalname,
-        scanId: scanSession.id
-      });
+      const aiResult = await aiService.analyzeRecyclingImage(uploadedFilePath, req.file.originalname);
       
       logger.info('AI analysis completed:', aiResult);
       
-      // Educational Note: Update scan session with results
-      await ScanSession.update(scanSession.id, {
-        status: 'completed',
-        ai_analysis: JSON.stringify(aiResult.analysis),
-        recycling_symbols: JSON.stringify(aiResult.symbols || []),
-        confidence_score: aiResult.confidence,
-        points_earned: aiResult.points || 0,
-        processed_at: new Date().toISOString()
-      });
-      
-      // Educational Note: Return success response with educational data
+      // Educational Note: Return success response matching frontend expectations
       res.json({
         success: true,
         message: 'Image analyzed successfully! Great job learning about recycling!',
         data: {
-          scan_id: scanSession.id,
+          session_id: scanId,
           filename: req.file.originalname,
-          analysis: aiResult.analysis,
-          symbols: aiResult.symbols || [],
-          confidence: aiResult.confidence,
-          points_earned: aiResult.points || 0,
-          educational_feedback: aiResult.educational_feedback
-        },
-        educational: {
-          concept: 'AI Image Analysis for Environmental Education',
-          learning_objectives: [
-            'Identify recycling symbols and materials',
-            'Understand environmental impact of recycling',
-            'Learn about proper waste sorting practices',
-            'Develop AI literacy through practical application'
-          ],
-          next_steps: [
-            'Try uploading different types of recyclable materials',
-            'Compare recycling symbols from different products',
-            'Learn about your local recycling guidelines'
-          ]
+          analysis: {
+            material_type: aiResult.material_type || 'unknown',
+            ric_code: aiResult.ric_code || null,
+            confidence: aiResult.confidence || 0,
+            points_earned: aiResult.points || 0,
+            recyclable: aiResult.recyclable || false,
+            description: aiResult.description || 'Analysis complete',
+            confidence_analysis: aiResult.confidence_analysis || null
+          },
+          educational: aiResult.educational || null
         }
       });
       
     } catch (aiError) {
       logger.error('AI analysis failed:', aiError.message);
       
-      // Educational Note: Update scan session with error state
-      await ScanSession.update(scanSession.id, {
-        status: 'failed',
-        error_message: aiError.message,
-        processed_at: new Date().toISOString()
-      });
-      
-      // Educational Note: Return educational fallback response
+      // Educational Note: Return educational fallback response matching frontend expectations
       res.json({
         success: true,
         message: 'AI analysis temporarily unavailable, but here is educational feedback!',
         data: {
-          scan_id: scanSession.id,
+          session_id: scanId,
           filename: req.file.originalname,
-          analysis: 'AI service currently unavailable for detailed analysis',
-          symbols: [],
-          confidence: 0,
-          points_earned: 5, // Educational participation points
-          educational_feedback: {
-            message: 'Great job participating in environmental learning!',
-            tips: [
+          analysis: {
+            material_type: 'unknown',
+            ric_code: null,
+            confidence: 0,
+            points_earned: 5,
+            recyclable: false,
+            description: 'AI service currently unavailable. Great job participating in environmental learning!',
+            confidence_analysis: null
+          },
+          educational: {
+            recycling_tips: [
               'Look for recycling symbols on product packaging',
               'Learn about the different types of recyclable materials',
               'Check your local recycling guidelines for proper sorting',
               'Remember that not all plastics are recyclable'
             ],
-            encouragement: 'Keep exploring and learning about environmental responsibility!'
+            environmental_impact: {
+              recycling_benefit: 'Every item you learn about contributes to environmental awareness',
+              energy_savings: 'Recycling saves significant energy compared to raw material processing',
+              co2_reduction: 'Proper recycling reduces greenhouse gas emissions'
+            }
           }
-        },
-        educational: {
-          concept: 'Environmental Education Through Technology',
-          explanation: 'Even without AI analysis, you are learning valuable skills about environmental awareness',
-          learning_value: 'The practice of identifying and sorting recyclable materials is valuable for environmental stewardship'
         }
       });
     }

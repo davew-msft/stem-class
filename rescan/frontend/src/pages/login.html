@@ -520,8 +520,8 @@
                 console.log('📸 User wants to scan an item - navigating to scan page');
                 
                 // Educational Note: Get current address data for context
-                const currentAddressDisplay = document.querySelector('.points-result .address-info .street-address');
-                const currentPointsDisplay = document.querySelector('.points-result .current-points');
+                const currentAddressDisplay = document.querySelector('.points-card .points-address');
+                const currentPointsDisplay = document.querySelector('.points-card .points-number');
                 
                 if (currentAddressDisplay && currentPointsDisplay) {
                     const addressText = currentAddressDisplay.textContent.trim();

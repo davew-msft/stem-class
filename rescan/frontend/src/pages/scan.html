@@ -940,17 +940,10 @@
                     document.getElementById('current-address-display').textContent = currentAddress;
                     document.getElementById('current-points-display').textContent = currentPoints;
                 } else {
-                    // Educational Note: Provide fallback for testing camera functionality
-                    console.log('No address context found, using test address for camera testing');
-                    const testAddress = '123 Test Street, Demo City';
-                    const testPoints = '150';
-                    
-                    // Set test data for this session
-                    localStorage.setItem('currentAddress', testAddress);
-                    localStorage.setItem('currentPoints', testPoints);
-                    
-                    document.getElementById('current-address-display').textContent = testAddress;
-                    document.getElementById('current-points-display').textContent = testPoints;
+                    // Educational Note: No address found - show placeholder without overwriting localStorage
+                    console.log('No address context found');
+                    document.getElementById('current-address-display').textContent = 'No address provided';
+                    document.getElementById('current-points-display').textContent = '0';
                 }
             } catch (error) {
                 console.error('Error loading address context:', error);

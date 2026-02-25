@@ -161,6 +161,14 @@ class UploadComponent {
     }
     
     /**
+     * Educational Method: Process File (alias for camera capture integration)
+     * Called from scan.html camera capture to feed captured image into upload flow
+     */
+    processFile(file) {
+        return this.handleFileSelection(file);
+    }
+    
+    /**
      * Educational Method: File Selection Handler
      * Validates and processes selected files
      */
@@ -361,9 +369,15 @@ class UploadComponent {
             formData.append('image', this.currentFile);
             
             // Educational Note: Add address context if available
-            const currentAddress = localStorage.getItem('currentAddressId');
-            if (currentAddress) {
-                formData.append('address_id', currentAddress);
+            const currentAddressId = localStorage.getItem('currentAddressId');
+            if (currentAddressId) {
+                formData.append('address_id', currentAddressId);
+            }
+            
+            // Educational Note: Send address text for debug file naming
+            const currentAddressText = localStorage.getItem('currentAddress');
+            if (currentAddressText) {
+                formData.append('address', currentAddressText);
             }
             
             // Educational Note: Make API call
