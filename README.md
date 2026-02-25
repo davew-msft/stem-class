@@ -165,3 +165,10 @@ then:
 
 "http://getrescan.com/"
 
+
+
+## Sample Addresses
+
+* 123 Main Street, Newark, NJ
+* 456 Oak Avenue, Trenton, New Jersey
+* 71 mt tabor way, ocean grove NJ

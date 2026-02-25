@@ -181,11 +181,16 @@ function createApp() {
     app.use('/api', apiRoutes);
     console.log('✅ API routes mounted at /api');
     
+    // Educational Note: Redirect root to login page
+    app.get('/', (req, res) => {
+        res.redirect('/src/pages/login.html');
+    });
+
     // Educational Note: Frontend route handler (SPA support)
     app.get('*', (req, res) => {
-        // Educational Note: Serve index.html for all non-API routes
+        // Educational Note: Serve login.html as the default landing page
         if (!req.url.startsWith('/api')) {
-            const indexPath = path.join(frontendPath, 'src/pages/home.html');
+            const indexPath = path.join(frontendPath, 'src/pages/login.html');
             res.sendFile(indexPath, (err) => {
                 if (err) {
                     console.error('❌ Error serving frontend:', err.message);

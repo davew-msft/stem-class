@@ -80,16 +80,6 @@ function createConnection() {
         
         console.log('✅ Connected to SQLite database successfully');
         
-        // Educational Note: Enable foreign key constraints
-        // SQLite requires this to be enabled per connection
-        db.run('PRAGMA foreign_keys = ON', (fkErr) => {
-          if (fkErr) {
-            console.warn('⚠️ Could not enable foreign keys:', fkErr.message);
-          } else if (config.database.options.verbose) {
-            console.log('🔗 Foreign key constraints enabled');
-          }
-        });
-        
         resolve(db);
       }
     );

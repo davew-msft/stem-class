@@ -48,14 +48,13 @@ async function createTables(dbService) {
     // Educational Note: Addresses table for tracking recycling points
     const createAddressesTable = `
         CREATE TABLE IF NOT EXISTS addresses (
-            id TEXT PRIMARY KEY,
-            street_address TEXT UNIQUE NOT NULL,
-            latitude REAL,
-            longitude REAL,
-            total_points INTEGER DEFAULT 0,
-            scan_count INTEGER DEFAULT 0,
-            created_at TEXT NOT NULL,
-            updated_at TEXT NOT NULL
+            street_address VARCHAR(255) PRIMARY KEY,
+            points_total INTEGER DEFAULT 0 NOT NULL CHECK (points_total >= 0),
+            is_active BOOLEAN DEFAULT 1,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT chk_address_not_empty CHECK (length(trim(street_address)) > 0),
+            CONSTRAINT chk_address_length CHECK (length(street_address) <= 255)
         )
     `;
     
@@ -83,10 +82,20 @@ async function createTables(dbService) {
     `;
     
     // Educational Note: Execute table creation commands
-    await dbService.db.exec(createAddressesTable);
+    await new Promise((resolve, reject) => {
+        dbService.db.exec(createAddressesTable, (err) => {
+            if (err) reject(err);
+            else resolve();
+        });
+    });
     console.log('✅ Addresses table created');
     
-    await dbService.db.exec(createScanSessionsTable);
+    await new Promise((resolve, reject) => {
+        dbService.db.exec(createScanSessionsTable, (err) => {
+            if (err) reject(err);
+            else resolve();
+        });
+    });
     console.log('✅ Scan sessions table created');
     
     // Educational Note: Create indexes for better performance
@@ -96,7 +105,12 @@ async function createTables(dbService) {
         CREATE INDEX IF NOT EXISTS idx_scan_sessions_created ON scan_sessions(created_at);
     `;
     
-    await dbService.db.exec(createIndexes);
+    await new Promise((resolve, reject) => {
+        dbService.db.exec(createIndexes, (err) => {
+            if (err) reject(err);
+            else resolve();
+        });
+    });
     console.log('✅ Database indexes created');
 }
 
@@ -109,47 +123,35 @@ async function createSampleData(dbService) {
     // Educational Note: Sample NJ addresses for testing
     const sampleAddresses = [
         {
-            id: 'addr-sample-123',
             street_address: '123 Main Street, Newark, NJ',
-            latitude: 40.7357,
-            longitude: -74.1724,
-            total_points: 150,
-            scan_count: 3,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+            points_total: 150
         },
         {
-            id: 'addr-sample-456',
             street_address: '456 Oak Avenue, Trenton, New Jersey',
-            latitude: 40.2206,
-            longitude: -74.7563,
-            total_points: 85,
-            scan_count: 2,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+            points_total: 85
         }
     ];
     
     // Educational Note: Insert sample addresses
     for (const address of sampleAddresses) {
         try {
-            await dbService.db.run(
-                `INSERT OR IGNORE INTO addresses 
-                 (id, street_address, latitude, longitude, total_points, scan_count, created_at, updated_at) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                [
-                    address.id,
-                    address.street_address,
-                    address.latitude,
-                    address.longitude,
-                    address.total_points,
-                    address.scan_count,
-                    address.created_at,
-                    address.updated_at
-                ]
-            );
+            await new Promise((resolve, reject) => {
+                dbService.db.run(
+                    `INSERT OR IGNORE INTO addresses 
+                     (street_address, points_total, is_active, created_at, updated_at) 
+                     VALUES (?, ?, 1, datetime('now'), datetime('now'))`,
+                    [
+                        address.street_address,
+                        address.points_total
+                    ],
+                    function(err) {
+                        if (err) reject(err);
+                        else resolve(this);
+                    }
+                );
+            });
             
-            console.log(`📍 Sample address added: ${address.street_address} (${address.total_points} points)`);
+            console.log(`📍 Sample address added: ${address.street_address} (${address.points_total} points)`);
         } catch (error) {
             console.warn(`⚠️ Could not add sample address: ${address.street_address}`, error.message);
         }
