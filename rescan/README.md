@@ -105,9 +105,69 @@ rescan/
 │       ├── services/       # API communication
 │       └── assets/         # CSS, JavaScript, images
 ├── data/                   # SQLite database storage
-├── docs/                   # Educational documentation
 └── specs/                  # Project specifications and planning
 ```
+
+## 🐳 Docker Deployment
+
+### Build
+
+```bash
+docker build -t rescan:latest .
+```
+
+### Run
+
+```bash
+# Run with volume mount for persistent database and .env for secrets
+docker run -d \
+  --name rescan \
+  -p 3000:3000 \
+  --env-file .env \
+  -v $(pwd)/data:/app/data \
+  rescan:latest
+```
+
+**What this does:**
+- `-d` — runs in the background
+- `-p 3000:3000` — maps port 3000 to the host
+- `--env-file .env` — passes Azure OpenAI credentials and other config
+- `-v $(pwd)/data:/app/data` — mounts the local `data/` directory so the SQLite database persists across container restarts
+
+### Manage
+
+```bash
+# View logs
+docker logs -f rescan
+
+# Stop
+docker stop rescan
+
+# Restart
+docker start rescan
+
+# Remove and recreate
+docker rm -f rescan
+docker run -d --name rescan -p 3000:3000 --env-file .env -v $(pwd)/data:/app/data rescan:latest
+```
+
+### Production (webserver)
+
+When deploying to a server (e.g. for `getrescan.davewentzel.com`):
+
+```bash
+# Copy the image to the server, or rebuild there
+# Then run with restart policy so it survives reboots
+docker run -d \
+  --name rescan \
+  --restart unless-stopped \
+  -p 3000:3000 \
+  --env-file .env \
+  -v /path/to/data:/app/data \
+  rescan:latest
+```
+
+Point your reverse proxy (nginx, caddy, etc.) at `localhost:3000`.
 
 ## 🔧 Available Scripts
 

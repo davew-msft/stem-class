@@ -19,9 +19,8 @@ yarn-error.log*
 .env.production
 
 # === Database Files ===
-# SQLite database files contain user data
-# For education: we might want to keep example data, but exclude real user data
-data/*.db
+# SQLite journal/temp files should not be committed
+# The main .db file IS committed so it ships with Docker and new clones
 data/*.db-journal
 data/*.db-wal
 data/*.db-shm

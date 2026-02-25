@@ -62,10 +62,10 @@ tmp/
 temp/
 *.tmp
 
-# Database Files
-# Educational Note: Database should use PersistentVolume in Kubernetes
-data/*.db
+# Database journal/WAL files (not the db itself - we ship it with the image)
 data/*.db-journal
+data/*.db-wal
+data/*.db-shm
 *.sqlite3
 
 # Upload Directory Content
@@ -84,9 +84,7 @@ Dockerfile*
 docker-compose*.yml
 .dockerignore
 
-# Kubernetes Manifests
-# Educational Note: K8s configs applied separately, not in image
-k8s/
+# YAML config files not needed in image
 *.yaml
 *.yml
 
