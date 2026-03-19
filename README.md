@@ -178,3 +178,16 @@ then:
 * [almost totally illegible "5"](./samples/5.png)
 * [LDPE that isn't labeled "LDPE"](./samples/ldpe.png)
 * [straightforward "1"](./samples/recycle.png)
+
+
+## redeploy
+
+cd git/stem-class/
+git pull
+cd rescan
+docker build -t rescan:v1.1.1 -t rescan:latest .
+docker ps
+docker stop 
+docker rm 
+docker run -d   --name rescan   -p 3000:3000   --env-file .env   -v $(pwd)/data:/app/data   rescan:latest
+docker ps

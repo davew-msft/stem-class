@@ -80,6 +80,9 @@ backend/public/uploads/*
 .DS_Store
 ```
 
+
+
+
 ### Step 1.3: Build the Image
 
 ```bash
@@ -87,7 +90,7 @@ backend/public/uploads/*
 cd /path/to/rescan
 
 # Build Docker image
-docker build -t rescan:v1.0.0 -t rescan:latest .
+docker build -t rescan:v1.1.1 -t rescan:latest .
 
 # Educational Note: The build process
 # 1. Downloads node:20 base image (if not cached)
