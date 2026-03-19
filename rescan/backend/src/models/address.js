@@ -60,8 +60,9 @@ class Address {
       return '';
     }
     
-    // Educational Note: Normalize to lowercase and trim whitespace
-    return address.trim().toLowerCase();
+    // Educational Note: Normalize to lowercase, trim whitespace, and remove punctuation
+    // This ensures consistent storage: "Main St." becomes "main st"
+    return address.trim().toLowerCase().replace(/[^a-z0-9\s]/g, '');
   }
 
   /**

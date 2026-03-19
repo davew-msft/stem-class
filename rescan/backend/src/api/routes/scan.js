@@ -15,6 +15,9 @@ const logger = require('../../utils/logger');
 // Import AI service
 const aiService = require('../../services/aiService');
 
+// Import database service for persisting scan results and points
+const dbService = require('../../services/dbService');
+
 /**
  * Educational Configuration: Multer Storage Setup
  * 
@@ -217,7 +220,27 @@ router.post('/upload', upload.single('image'), handleMulterError, async (req, re
       const aiResult = await aiService.analyzeRecyclingImage(uploadedFilePath, req.file.originalname);
       
       logger.info('AI analysis completed:', aiResult);
-      
+
+      // Persist scan results: create address if needed and update points
+      const address = req.body.address || null;
+      const pointsEarned = aiResult.points || 0;
+
+      if (address && pointsEarned > 0) {
+        try {
+          if (!dbService.db) {
+            await dbService.initialize();
+          }
+          // Create address if it doesn't exist (idempotent)
+          await dbService.createAddress(address);
+          // Add earned points to the address total
+          await dbService.updateAddressPoints(address, pointsEarned);
+          logger.info(`Saved ${pointsEarned} points for address: ${address}`);
+        } catch (dbError) {
+          logger.error('Failed to persist scan results:', dbError.message);
+          // Don't fail the request — still return the analysis to the user
+        }
+      }
+
       // Educational Note: Return success response matching frontend expectations
       res.json({
         success: true,

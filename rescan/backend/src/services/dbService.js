@@ -51,7 +51,8 @@ class DatabaseService {
         throw new Error('Invalid street address provided');
       }
 
-      const cleanAddress = streetAddress.trim();
+      // Educational Note: Normalize to lowercase and remove punctuation for consistent matching
+      const cleanAddress = streetAddress.trim().toLowerCase().replace(/[^a-z0-9\s]/g, '');
       if (cleanAddress.length === 0) {
         throw new Error('Street address cannot be empty');
       }
@@ -59,6 +60,7 @@ class DatabaseService {
       console.log(`🔍 Looking up address: "${cleanAddress}"`);
 
       // Educational Note: Database query with prepared statements
+      // Address is already normalized (lowercase, no punctuation) so direct match works
       const query = `
         SELECT 
           street_address,
@@ -67,7 +69,7 @@ class DatabaseService {
           created_at,
           updated_at
         FROM addresses 
-        WHERE LOWER(street_address) = LOWER(?)
+        WHERE street_address = ?
         AND is_active = 1
       `;
 
@@ -132,7 +134,8 @@ class DatabaseService {
         throw new Error('Invalid street address provided');
       }
 
-      const cleanAddress = streetAddress.trim();
+      // Educational Note: Normalize to lowercase and remove punctuation for consistent storage
+      const cleanAddress = streetAddress.trim().toLowerCase().replace(/[^a-z0-9\s]/g, '');
       if (cleanAddress.length === 0) {
         throw new Error('Street address cannot be empty');
       }
@@ -208,7 +211,8 @@ class DatabaseService {
         throw new Error('Invalid points value - must be a number');
       }
 
-      const cleanAddress = streetAddress.trim();
+      // Educational Note: Normalize to lowercase and remove punctuation for consistent matching
+      const cleanAddress = streetAddress.trim().toLowerCase().replace(/[^a-z0-9\s]/g, '');
       console.log(`🎯 Updating points for ${cleanAddress}: ${pointsToAdd > 0 ? '+' : ''}${pointsToAdd}`);
 
       // Educational Note: First get current points to calculate new total
@@ -225,12 +229,13 @@ class DatabaseService {
       }
 
       // Educational Note: UPDATE with prepared statement
+      // Address is already normalized (lowercase, no punctuation) so direct match works
       const updateQuery = `
         UPDATE addresses 
         SET 
           points_total = ?,
           updated_at = CURRENT_TIMESTAMP
-        WHERE LOWER(street_address) = LOWER(?)
+        WHERE street_address = ?
         AND is_active = 1
       `;
 

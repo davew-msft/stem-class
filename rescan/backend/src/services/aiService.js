@@ -194,7 +194,7 @@ class AIService {
           learning_moment: 'This demonstrates the importance of error handling in AI applications'
         },
         confidence: 0,
-        material_type: 'unknown',
+        material_type: 'plastic',
         ric_code: null,
         points: 0
       };
@@ -332,7 +332,7 @@ class AIService {
     // Simulate AI processing time
     await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
 
-    // Generate realistic mock response based on common scenarios
+    // Generate realistic mock response based on common plastic scenarios
     const mockScenarios = [
       {
         material_type: 'plastic',
@@ -351,26 +351,25 @@ class AIService {
         educational_note: 'HDPE is widely accepted in recycling programs'
       },
       {
-        material_type: 'cardboard',
-        ric_code: null,
-        description: 'Corrugated cardboard packaging',
-        confidence: 92,
-        recyclable: true,
-        educational_note: 'Cardboard is highly recyclable when clean and dry'
-      },
-      {
         material_type: 'plastic',
         ric_code: 5,
         description: 'PP (Polypropylene) container',
         confidence: 70,
         recyclable: true,
         educational_note: 'PP recycling availability varies by location'
+      },
+      {
+        material_type: 'plastic',
+        ric_code: 4,
+        description: 'LDPE (Low-Density Polyethylene) bag or wrap',
+        confidence: 65,
+        recyclable: true,
+        educational_note: 'LDPE often requires special drop-off locations'
       }
     ];
 
     // Select random scenario or base on filename patterns
     const scenario = fileName.toLowerCase().includes('bottle') ? mockScenarios[0] :
-                    fileName.toLowerCase().includes('cardboard') ? mockScenarios[2] :
                     mockScenarios[Math.floor(Math.random() * mockScenarios.length)];
 
     return {
@@ -389,19 +388,8 @@ class AIService {
    * Calculate points based on material type, RIC code, and confidence
    */
   calculatePoints(materialType, ricCode, confidence) {
-    let basePoints = 0;
-
-    // Base points by material type
-    const materialPoints = {
-      plastic: 10,
-      cardboard: 8,
-      paper: 6,
-      glass: 12,
-      metal: 15,
-      aluminum: 18
-    };
-
-    basePoints = materialPoints[materialType] || 5;
+    // All scanned items are plastic
+    let basePoints = 10;
 
     // RIC code multipliers (some codes are more valuable)
     const ricMultipliers = {
@@ -431,19 +419,8 @@ class AIService {
    * Normalize material type to standard categories
    */
   normalizeMaterialType(type) {
-    if (!type) return 'unknown';
-    
-    const normalized = type.toLowerCase().trim();
-    
-    // Common mappings
-    if (normalized.includes('plastic') || normalized.includes('polymer')) return 'plastic';
-    if (normalized.includes('cardboard') || normalized.includes('corrugated')) return 'cardboard';
-    if (normalized.includes('paper')) return 'paper';
-    if (normalized.includes('glass')) return 'glass';
-    if (normalized.includes('aluminum') || normalized.includes('aluminium')) return 'aluminum';
-    if (normalized.includes('metal') || normalized.includes('steel')) return 'metal';
-    
-    return normalized;
+    // All scanned items are assumed to be plastic
+    return 'plastic';
   }
 
   /**
@@ -505,38 +482,11 @@ class AIService {
    * Get material-specific information
    */
   getMaterialInfo(materialType) {
-    const info = {
-      plastic: {
-        description: 'Plastic materials made from petroleum-based polymers',
-        common_uses: ['Bottles', 'Containers', 'Packaging', 'Bags'],
-        decomposition_time: '450-1000 years',
-        recycling_process: 'Melting and reforming into new products'
-      },
-      cardboard: {
-        description: 'Paper-based material with corrugated structure',
-        common_uses: ['Shipping boxes', 'Packaging', 'Food containers'],
-        decomposition_time: '2-5 months',
-        recycling_process: 'Pulping and reforming into new paper products'
-      },
-      paper: {
-        description: 'Cellulose-based material from wood pulp',
-        common_uses: ['Documents', 'Newspapers', 'Books', 'Packaging'],
-        decomposition_time: '2-6 weeks',
-        recycling_process: 'De-inking and pulping into new paper'
-      },
-      glass: {
-        description: 'Silica-based material that can be infinitely recycled',
-        common_uses: ['Bottles', 'Jars', 'Windows', 'Containers'],
-        decomposition_time: '1 million years+',
-        recycling_process: 'Melting and reforming without quality loss'
-      }
-    };
-
-    return info[materialType] || {
-      description: 'Material type not recognized',
-      common_uses: [],
-      decomposition_time: 'Unknown',
-      recycling_process: 'Varies by material'
+    return {
+      description: 'Plastic materials made from petroleum-based polymers',
+      common_uses: ['Bottles', 'Containers', 'Packaging', 'Bags'],
+      decomposition_time: '450-1000 years',
+      recycling_process: 'Melting and reforming into new products'
     };
   }
 
@@ -556,67 +506,22 @@ class AIService {
    * Get recycling tips for material type
    */
   getRecyclingTips(materialType) {
-    const tips = {
-      plastic: [
-        'Remove caps and lids if required by local facility',
-        'Rinse containers to remove food residue',
-        'Check local guidelines for accepted plastic types',
-        'Avoid putting plastic bags in curbside bins'
-      ],
-      cardboard: [
-        'Remove all tape, staples, and plastic elements',
-        'Break down boxes to save space',
-        'Keep cardboard dry and clean',
-        'Separate pizza boxes if greasy'
-      ],
-      paper: [
-        'Remove plastic windows from envelopes',
-        'Separate different paper types if required',
-        'Avoid contamination with food or liquids',
-        'Staples are usually OK to leave in'
-      ],
-      glass: [
-        'Remove lids and caps',
-        'Rinse containers clean',
-        'Separate by color if required locally',
-        'Be careful with broken glass'
-      ]
-    };
-
-    return tips[materialType] || ['Check local recycling guidelines'];
+    return [
+      'Remove caps and lids if required by local facility',
+      'Rinse containers to remove food residue',
+      'Check local guidelines for accepted plastic types',
+      'Avoid putting plastic bags in curbside bins'
+    ];
   }
 
   /**
    * Get environmental impact information
    */
   getEnvironmentalImpact(materialType) {
-    const impacts = {
-      plastic: {
-        recycling_benefit: 'Saves petroleum, reduces ocean pollution',
-        energy_savings: 'Uses 88% less energy than making new plastic',
-        co2_reduction: 'Reduces CO2 emissions by 1-2 tons per ton recycled'
-      },
-      cardboard: {
-        recycling_benefit: 'Saves trees, reduces landfill waste',
-        energy_savings: 'Uses 75% less energy than making new cardboard',
-        co2_reduction: 'Every ton recycled saves 1 cubic yard of landfill space'
-      },
-      paper: {
-        recycling_benefit: 'Preserves forests, saves water',
-        energy_savings: 'Uses 60% less energy than making new paper',
-        co2_reduction: 'Each ton recycled saves 17 trees'
-      },
-      glass: {
-        recycling_benefit: 'Infinite recyclability without quality loss',
-        energy_savings: 'Uses 30% less energy than making new glass',
-        co2_reduction: 'Every 10% increase in glass recycling reduces CO2 by 5%'
-      }
-    };
-
-    return impacts[materialType] || {
-      recycling_benefit: 'Reduces waste and conserves resources',
-      energy_savings: 'Generally saves energy compared to new production',
-      co2_reduction: 'Helps reduce greenhouse gas emissions'
+    return {
+      recycling_benefit: 'Saves petroleum, reduces ocean pollution',
+      energy_savings: 'Uses 88% less energy than making new plastic',
+      co2_reduction: 'Reduces CO2 emissions by 1-2 tons per ton recycled'
     };
   }
 
@@ -625,20 +530,20 @@ class AIService {
    */
   getEducationalPrompts() {
     return {
-      system_prompt: `You are an expert recycling symbol recognition AI designed for educational purposes. 
+      system_prompt: `You are an expert recycling symbol recognition AI. 
 Your role is to analyze images and identify recycling symbols, material types, and provide educational information.
 
 Analysis Guidelines:
 1. Look for recycling symbols, numbers, and material indicators
 2. Identify RIC codes (1-7 for plastics) when visible
-3. Determine material type (plastic, cardboard, paper, glass, metal)
+3. Determine material type ONLY when the RIC code cannot be determined.  Assume the material type is plastic if a recycling symbol is visible but no RIC code can be identified.
 4. Assess recyclability based on common guidelines
 5. Provide confidence scores based on symbol clarity
 
 Response Format: Return a JSON object with these fields:
 {
-  "material_type": "plastic|cardboard|paper|glass|metal|aluminum",
-  "ric_code": 1-7 for plastics or null for other materials,
+  "material_type": "plastic",
+  "ric_code": 1-7 for plastics,
   "confidence": confidence percentage (0-100),
   "description": "Clear description of what you see",
   "recyclable": true/false based on general guidelines,
@@ -650,7 +555,7 @@ Educational Focus: Your analysis should help users learn about recycling symbols
       analysis_prompt: `Please analyze this image for recycling symbols and materials:
 
 1. Look for recycling symbol triangles with numbers (RIC codes 1-7)
-2. Identify the material type (plastic, cardboard, paper, glass, etc.)
+2. Identify the material type (it should always be plastic if a recycling symbol is visible, even if the RIC code is not clear)
 3. Assess the clarity of any recycling symbols visible
 4. Determine general recyclability based on common guidelines
 5. Provide a confidence score based on how clearly you can see the symbols
