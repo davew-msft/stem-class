@@ -144,7 +144,22 @@ class AIService {
    * Returns educational analysis with confidence scoring
    */
   async analyzeRecyclingImage(imagePath, originalFileName = 'uploaded_image') {
+    let initError = null;
     try {
+      // Lazy initialization: attempt to connect to Azure OpenAI on first call
+      // Use a 30-second timeout so a bad credential doesn't hang the request
+      if (!this.isInitialized && !this._initAttempted) {
+        this._initAttempted = true;
+        await Promise.race([
+          this.initialize(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Azure OpenAI initialization timed out after 30s — check Service Principal credentials')), 30000))
+        ]);
+      }
+
+      if (!this.isInitialized || !this.client) {
+        throw new Error('Azure OpenAI is not initialized. Check your AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, AZURE_OPENAI_ENDPOINT, and AZURE_OPENAI_DEPLOYMENT_NAME environment variables.');
+      }
+
       logger.info(`Starting AI analysis for image: ${originalFileName}`);
 
       // Check if file exists
@@ -154,16 +169,7 @@ class AIService {
       const stats = await fs.stat(imagePath);
       logger.info(`Analyzing image: ${originalFileName}, Size: ${stats.size} bytes`);
 
-      let analysisResult;
-
-      if (this.isInitialized && this.client) {
-        // Use real Azure OpenAI analysis
-        analysisResult = await this.performRealAIAnalysis(imagePath, originalFileName);
-      } else {
-        // Use educational mock analysis for demonstration
-        logger.info('Using mock AI analysis for educational demonstration');
-        analysisResult = await this.performMockAIAnalysis(imagePath, originalFileName);
-      }
+      const analysisResult = await this.performRealAIAnalysis(imagePath, originalFileName);
 
       // Enhance result with educational content
       analysisResult.educational = this.getEducationalContent(analysisResult.material_type, analysisResult.ric_code);
@@ -178,7 +184,7 @@ class AIService {
     } catch (error) {
       logger.error('Error in AI image analysis:', error);
       
-      // Return educational error response
+      // Return error response with debug info so the frontend can show what went wrong
       return {
         success: false,
         error: 'AI_ANALYSIS_FAILED',
@@ -196,7 +202,11 @@ class AIService {
         confidence: 0,
         material_type: 'plastic',
         ric_code: null,
-        points: 0
+        points: 0,
+        debug: {
+          raw_prompts: [{ role: 'error', content: `Analysis failed: ${error.message}` }],
+          raw_response: `ERROR: ${error.message}\n\nStack: ${error.stack}`
+        }
       };
     }
   }
@@ -245,8 +255,19 @@ class AIService {
       const aiResponse = response.choices[0].message.content;
       logger.info('Raw AI response received:', aiResponse);
 
+      // Build text-only version of prompts (exclude base64 image data)
+      const rawPrompts = messages.map(m => {
+        if (Array.isArray(m.content)) {
+          const textParts = m.content.filter(p => p.type === 'text').map(p => p.text);
+          return { role: m.role, content: textParts.join('\n') + '\n[image attached]' };
+        }
+        return { role: m.role, content: m.content };
+      });
+
       // Parse AI response into structured format
-      return this.parseAIResponse(aiResponse, fileName);
+      const result = this.parseAIResponse(aiResponse, fileName);
+      result.debug = { raw_prompts: rawPrompts, raw_response: aiResponse };
+      return result;
 
     } catch (error) {
       logger.error('Azure OpenAI analysis failed:', error);
@@ -259,22 +280,31 @@ class AIService {
    */
   parseAIResponse(aiResponse, fileName) {
     try {
+      // Strip markdown code fences if present (e.g. ```json ... ```)
+      let cleanResponse = aiResponse.trim();
+      const fenceMatch = cleanResponse.match(/^```(?:json)?\s*\n?([\s\S]*?)\n?```$/);
+      if (fenceMatch) {
+        cleanResponse = fenceMatch[1].trim();
+      }
+
       // Try to parse JSON response
       let parsed;
       try {
-        parsed = JSON.parse(aiResponse);
+        parsed = JSON.parse(cleanResponse);
       } catch (jsonError) {
         // If not JSON, extract using regex patterns
-        parsed = this.extractFromTextResponse(aiResponse);
+        parsed = this.extractFromTextResponse(cleanResponse);
       }
 
       // Validate and normalize response
+      const ricCode = this.normalizeRICCode(parsed.ric_code || parsed.ric);
       const result = {
         success: true,
-        material_type: this.normalizeMaterialType(parsed.material_type || parsed.material),
-        ric_code: this.normalizeRICCode(parsed.ric_code || parsed.ric),
+        material_type: this.normalizeMaterialType(parsed.material_type || parsed.material, ricCode),
+        ric_code: ricCode,
         confidence: Math.min(Math.max(parseInt(parsed.confidence) || 50, 0), 100),
         description: parsed.description || 'AI-identified recycling symbol',
+        reasoning: parsed.reasoning || null,
         recyclable: parsed.recyclable !== false, // Default to true unless explicitly false
         points: this.calculatePoints(parsed.material_type, parsed.ric_code, parsed.confidence),
         ai_analysis: {
@@ -372,6 +402,12 @@ class AIService {
     const scenario = fileName.toLowerCase().includes('bottle') ? mockScenarios[0] :
                     mockScenarios[Math.floor(Math.random() * mockScenarios.length)];
 
+    const mockPrompts = [
+      { role: 'system', content: this.educationalPrompts.system_prompt },
+      { role: 'user', content: this.educationalPrompts.analysis_prompt + '\n[image attached]' }
+    ];
+    const mockResponse = JSON.stringify(scenario, null, 2);
+
     return {
       success: true,
       ...scenario,
@@ -380,7 +416,8 @@ class AIService {
         processing_method: 'mock_analysis_for_education',
         timestamp: new Date().toISOString(),
         note: 'This is a simulated AI response for educational purposes'
-      }
+      },
+      debug: { raw_prompts: mockPrompts, raw_response: mockResponse }
     };
   }
 
@@ -416,11 +453,14 @@ class AIService {
   }
 
   /**
-   * Normalize material type to standard categories
+   * Normalize material type using RIC database when available
    */
-  normalizeMaterialType(type) {
-    // All scanned items are assumed to be plastic
-    return 'plastic';
+  normalizeMaterialType(type, ricCode) {
+    if (ricCode && this.ricSymbolDatabase[ricCode]) {
+      const ric = this.ricSymbolDatabase[ricCode];
+      return `${ric.name} - ${ric.full_name}`;
+    }
+    return type || 'plastic';
   }
 
   /**
@@ -531,37 +571,60 @@ class AIService {
   getEducationalPrompts() {
     return {
       system_prompt: `You are an expert recycling symbol recognition AI. 
-Your role is to analyze images and identify recycling symbols, material types, and provide educational information.
+Your job is to analyze images and identify recycling symbols with HIGH accuracy and consistency.
 
-Analysis Guidelines:
-1. Look for recycling symbols, numbers, and material indicators
-2. Identify RIC codes (1-7 for plastics) when visible
-3. Determine material type ONLY when the RIC code cannot be determined.  Assume the material type is plastic if a recycling symbol is visible but no RIC code can be identified.
-4. Assess recyclability based on common guidelines
-5. Provide confidence scores based on symbol clarity
+STRICT RULES (VERY IMPORTANT):
+1. If a recycling triangle with a number (RIC code 1–7) is visible, you MUST:
+- Return that exact number as "ric_code"
+- Match it to the correct plastic type using this mapping ONLY:
+
+1 = Polyethylene Terephthalate (PET/PETE)
+2 = High-Density Polyethylene (HDPE)
+3 = Polyvinyl Chloride (PVC)
+4 = Low-Density Polyethylene (LDPE)
+5 = Polypropylene (PP)
+6 = Polystyrene (PS)
+7 = Other (Mixed Plastics)
+
+2. NEVER mismatch the number and material.
+- Example: If ric_code = 4, it MUST be LDPE (not polystyrene)
+- If unsure, LOWER confidence instead of guessing
+
+3. ONLY infer material type IF NO number is visible.
+- If guessing, set ric_code = null
+- Lower confidence significantly (below 60)
+
+4. If a recycling symbol is visible but number is unclear:
+- material_type = "plastic"
+- ric_code = null
+- explain uncertainty
+
+5. Confidence Rules:
+- 90-100: number clearly visible
+- 70-89: mostly clear but slightly obstructed
+- 40-69: symbol visible but number unclear
+- below 40: very unclear or guessing
+
+6. Recyclability:
+- 1, 2 → true
+- 4, 5 → true (but may vary)
+- 3, 6, 7 → false
+
+7. Be concise but educational.
 
 Response Format: Return a JSON object with these fields:
 {
   "material_type": "plastic",
-  "ric_code": 1-7 for plastics,
+  "ric_code": number or null,
   "confidence": confidence percentage (0-100),
-  "description": "Clear description of what you see",
+  "description": "What you visually see",
   "recyclable": true/false based on general guidelines,
-  "reasoning": "Why you made this determination"
+  "reasoning": "Why you chose this result"
 }
 
-Educational Focus: Your analysis should help users learn about recycling symbols and environmental impact.`,
+`,
 
-      analysis_prompt: `Please analyze this image for recycling symbols and materials:
-
-1. Look for recycling symbol triangles with numbers (RIC codes 1-7)
-2. Identify the material type (it should always be plastic if a recycling symbol is visible, even if the RIC code is not clear)
-3. Assess the clarity of any recycling symbols visible
-4. Determine general recyclability based on common guidelines
-5. Provide a confidence score based on how clearly you can see the symbols
-
-Focus on educational value - explain what you see and why it leads to your conclusion.
-If symbols are unclear or partially visible, note this in your confidence scoring.
+      analysis_prompt: `Please analyze this image for recycling symbols and materials.  
 
 Return your analysis in the JSON format specified in your system instructions.`
     };

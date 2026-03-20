@@ -568,6 +568,7 @@ class UploadComponent {
                     <i class="fas fa-info-circle"></i> Analysis Description
                 </h4>
                 <p style="color: #666; line-height: 1.6;">${analysis.description}</p>
+                ${analysis.reasoning ? `<p style="color: #555; line-height: 1.6; margin-top: 0.5rem;"><strong>Reasoning:</strong> ${analysis.reasoning}</p>` : ''}
             </div>
             
             <!-- Educational Content -->
@@ -591,6 +592,9 @@ class UploadComponent {
                 </div>
             </div>
             
+            <!-- Raw AI Debug Section -->
+            ${data.debug ? this.createDebugHTML(data.debug) : ''}
+
             <!-- Scan Again Section -->
             <div class="scan-again-section">
                 <button class="btn-scan-again" onclick="scanAgain()">
@@ -686,7 +690,41 @@ class UploadComponent {
         
         return iconMap[materialType] || 'question';
     }
-    
+
+    /**
+     * Create debug section showing raw prompts sent to OpenAI and raw response
+     */
+    createDebugHTML(debug) {
+        if (!debug) return '';
+
+        const escapeHtml = (str) => {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        };
+
+        const promptsText = (debug.raw_prompts || [])
+            .map(p => `[${p.role}]\n${p.content}`)
+            .join('\n\n---\n\n');
+
+        return `
+            <div class="educational-card" style="margin-top: 1.5rem;">
+                <div class="educational-title" style="cursor: pointer;" onclick="document.getElementById('debug-prompts').style.display = document.getElementById('debug-prompts').style.display === 'none' ? 'block' : 'none'">
+                    <i class="fas fa-terminal"></i>
+                    Raw Prompt(s) Sent to OpenAI ▾
+                </div>
+                <pre id="debug-prompts" style="display: none; background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 6px; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; max-height: 400px; overflow-y: auto; font-size: 0.85rem; line-height: 1.5;">${escapeHtml(promptsText)}</pre>
+            </div>
+            <div class="educational-card" style="margin-top: 1rem;">
+                <div class="educational-title" style="cursor: pointer;" onclick="document.getElementById('debug-response').style.display = document.getElementById('debug-response').style.display === 'none' ? 'block' : 'none'">
+                    <i class="fas fa-robot"></i>
+                    Raw Response from OpenAI ▾
+                </div>
+                <pre id="debug-response" style="display: none; background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 6px; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; max-height: 400px; overflow-y: auto; font-size: 0.85rem; line-height: 1.5;">${escapeHtml(debug.raw_response || 'No response data')}</pre>
+            </div>
+        `;
+    }
+
     /**
      * Educational Method: Setup Result Interactions
      * Adds interactive functionality to results

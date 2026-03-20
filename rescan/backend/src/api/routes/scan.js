@@ -255,9 +255,11 @@ router.post('/upload', upload.single('image'), handleMulterError, async (req, re
             points_earned: aiResult.points || 0,
             recyclable: aiResult.recyclable || false,
             description: aiResult.description || 'Analysis complete',
+            reasoning: aiResult.reasoning || null,
             confidence_analysis: aiResult.confidence_analysis || null
           },
-          educational: aiResult.educational || null
+          educational: aiResult.educational || null,
+          debug: aiResult.debug || null
         }
       });
       
