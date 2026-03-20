@@ -185,7 +185,7 @@ then:
 cd git/stem-class/
 git pull
 cd rescan
-docker build -t rescan:v1.1.1 -t rescan:latest .
+docker build -t rescan:v1.1.2 -t rescan:latest .
 docker ps
 docker stop 
 docker rm 

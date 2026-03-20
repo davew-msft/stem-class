@@ -28,6 +28,7 @@ class AIService {
   constructor() {
     this.client = null;
     this.isInitialized = false;
+    this.tokenExpiresAt = 0;
     this.educationalPrompts = this.getEducationalPrompts();
     this.ricSymbolDatabase = this.getRICSymbolDatabase();
   }
@@ -81,22 +82,15 @@ class AIService {
 
       logger.info('Azure AD token obtained successfully');
 
-      // Educational Note: Initialize OpenAI client for Azure with Azure AD authentication
-      // The openai SDK supports Azure OpenAI natively
-      this.client = new OpenAI({
-        apiKey: tokenResponse.token,
-        baseURL: `${process.env.AZURE_OPENAI_ENDPOINT}/openai/deployments/${process.env.AZURE_OPENAI_DEPLOYMENT_NAME}`,
-        defaultQuery: { 'api-version': '2024-10-01-preview' },
-        defaultHeaders: {
-          'Authorization': `Bearer ${tokenResponse.token}`
-        }
-      });
-
-      // Store credential for potential token refresh
+      // Store credential for token refresh and deployment config
       this.credential = credential;
-
-      // Store deployment name for use in requests
       this.deploymentName = process.env.AZURE_OPENAI_DEPLOYMENT_NAME;
+
+      // Build the client with the fresh token
+      this.buildClient(tokenResponse.token);
+
+      // Track expiry so we can refresh before it lapses (5-min buffer)
+      this.tokenExpiresAt = tokenResponse.expiresOnTimestamp - 5 * 60 * 1000;
 
       // Test the connection with a simple request
       await this.testConnection();
@@ -112,6 +106,38 @@ class AIService {
       this.isInitialized = false;
       return false;
     }
+  }
+
+  /**
+   * Build (or rebuild) the OpenAI client with a Bearer token
+   */
+  buildClient(token) {
+    this.client = new OpenAI({
+      apiKey: token,
+      baseURL: `${process.env.AZURE_OPENAI_ENDPOINT}/openai/deployments/${this.deploymentName}`,
+      defaultQuery: { 'api-version': '2024-10-01-preview' },
+      defaultHeaders: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+  }
+
+  /**
+   * Refresh the Azure AD token if it is expired or about to expire,
+   * then rebuild the OpenAI client with the new token.
+   */
+  async refreshTokenIfNeeded() {
+    if (Date.now() < this.tokenExpiresAt) {
+      return; // token is still valid
+    }
+    logger.info('Azure AD token expired or expiring soon — refreshing...');
+    const tokenResponse = await this.credential.getToken('https://cognitiveservices.azure.com/.default');
+    if (!tokenResponse || !tokenResponse.token) {
+      throw new Error('Failed to refresh Azure AD token');
+    }
+    this.buildClient(tokenResponse.token);
+    this.tokenExpiresAt = tokenResponse.expiresOnTimestamp - 5 * 60 * 1000;
+    logger.info('Azure AD token refreshed successfully');
   }
 
   /**
@@ -243,6 +269,9 @@ class AIService {
           ]
         }
       ];
+
+      // Refresh token if needed before calling Azure OpenAI
+      await this.refreshTokenIfNeeded();
 
       // Call Azure OpenAI Vision API
       const response = await this.client.chat.completions.create({
